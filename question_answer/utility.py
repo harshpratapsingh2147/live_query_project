@@ -4,12 +4,13 @@ from langchain.vectorstores import Chroma
 from .customEmbeddingsClass import CustomOpenAIEmbeddings
 from langchain_community.chat_models import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
-from langchain_core.prompts import PromptTemplate
-from functools import partial
 from decouple import config
+from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import MessagesPlaceholder
 import chromadb
 
+chroma_ip = config('CHROMA_IP')
 
 api_key = config('OPEN_AI_API_KEY')
 BASE_TRANSCRIPT_PATH = config('BASE_TRANSCRIPT_PATH')
@@ -54,7 +55,7 @@ def maxsim(query_embedding, document_embedding):
 def get_top_k_docs(query, class_id):
     top_k = 3
     scores = []
-    client = chromadb.HttpClient(host='172.20.0.2', port=8000)
+    client = chromadb.HttpClient(host=chroma_ip, port=8000)
 
     # Get the stored vector db
     embedding = CustomOpenAIEmbeddings(openai_api_key=api_key)
@@ -68,8 +69,6 @@ def get_top_k_docs(query, class_id):
                                                            k=3,
                                                            filter={"source": f"{BASE_TRANSCRIPT_PATH}{class_id}_transcript.txt"})
 
-    print("relevant docs are here...............................................")
-    print(relevant_docs)
 
     # Load the tokenizer and the model
     tokenizer = AutoTokenizer.from_pretrained("colbert-ir/colbertv2.0")
@@ -94,6 +93,7 @@ def get_top_k_docs(query, class_id):
 
     # Sort the scores by highest to lowest and print
     sorted_data = sorted(scores, key=lambda x: x['score'], reverse=True)[:top_k]
+    print("relevant docs are here...............................................")
     print(sorted_data)
     return format_docs([data['document'] for data in sorted_data])
 
@@ -102,27 +102,81 @@ def format_docs(docs):
     return "\n\n".join(doc for doc in docs)
 
 
-def question_answer(class_id, query):
+def get_chat_history():
+    return [
+    ]
 
+
+def get_contextualized_qa_chain():
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.3, openai_api_key=api_key)
 
-    template = """Use only the following pieces of context to answer the question at the end.
-    If the question cannot be answered using only the given context, just say that you don't know, don't try to make up an answer.
-    If the context is empty, just say that you don't know, don't try to make up an answer.
-    Always say "thanks for asking!" at the end of the answer.
+    contextualize_q_system_prompt = """
+    You will be provided with a chat history between AI and human.
+    You will also be provided with a latest question from human which might context in the chat history, formulate a standalone question 
+    which can be understood without the chat history. You MUST NOT answer the question,
+    just reformulate the latest user question if needed, otherwise return it as is.
+    """
 
-    {context}
+    contextualize_q_prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", contextualize_q_system_prompt),
+            MessagesPlaceholder(variable_name="chat_history"),
+            ("human", "{question}"),
+        ]
+    )
+    contextualize_q_chain = contextualize_q_prompt | llm | StrOutputParser()
+    return contextualize_q_chain
 
-    Question: {question}
 
-    Helpful Answer:"""
-    custom_rag_prompt = PromptTemplate.from_template(template)
+def get_contextualized_question(input: dict):
+    if input.get("chat_history"):
+        contextualized_qa_chain = get_contextualized_qa_chain()
+        contextualized_question = contextualized_qa_chain.invoke({
+            "chat_history": input['chat_history'],
+            "question": input['question']
+        })
+        return contextualized_question
+    else:
+        return input["question"]
 
-    response = (
-            {"context": partial(get_top_k_docs, class_id=class_id), "question": RunnablePassthrough()}
-            | custom_rag_prompt
-            | llm
-            | StrOutputParser()
+
+def get_context(class_id, query, chat_history):
+    contextualized_question = get_contextualized_question({"chat_history": chat_history, "question": query})
+    print("here is the context question.......................")
+    print(contextualized_question)
+    return get_top_k_docs(query=contextualized_question, class_id=class_id)
+
+
+def question_answer(class_id, query):
+    llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.3, openai_api_key=api_key)
+
+    qa_system_prompt = """Use only the following pieces of context to answer the question. 
+    If the question cannot be answered using the context or the chat_history, just say that you don't know the answer. 
+    Do not try to make up an answer from some other source.
+    Always say "thanks for asking!" at the end of the answer. 
+    Use three sentences maximum and keep the answer concise.
+
+    {context} """
+
+    qa_prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", qa_system_prompt),
+            MessagesPlaceholder(variable_name="chat_history"),
+            ("human", "{question}"),
+        ]
     )
 
-    return response.invoke(query)
+    rag_chain = (
+            qa_prompt | llm | StrOutputParser()
+    )
+
+    chat_history = get_chat_history()
+
+    return rag_chain.invoke(
+        {
+            "question": query,
+            "chat_history": chat_history,
+            "context": get_context(class_id, query, chat_history)
+        }
+    )
+
