@@ -9,7 +9,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.prompts import MessagesPlaceholder
 import chromadb
-
+from .get_chat_history import get_latest_chat_history
 chroma_ip = config('CHROMA_IP')
 
 api_key = config('OPEN_AI_API_KEY')
@@ -102,9 +102,14 @@ def format_docs(docs):
     return "\n\n".join(doc for doc in docs)
 
 
-def get_chat_history():
-    return [
-    ]
+def get_chat_history(class_id, member_id):
+    chat_history_list = get_latest_chat_history(class_id=class_id, member_id=member_id)
+    chat_list = []
+    for chat_history in chat_history_list:
+        chat_list.append(HumanMessage(content=chat_history['question']))
+        chat_list.append(AIMessage(content=chat_history['response']))
+    print(chat_list)
+    return chat_list
 
 
 def get_contextualized_qa_chain():
@@ -147,7 +152,7 @@ def get_context(class_id, query, chat_history):
     return get_top_k_docs(query=contextualized_question, class_id=class_id)
 
 
-def question_answer(class_id, query):
+def question_answer(class_id, member_id, query):
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.3, openai_api_key=api_key)
 
     qa_system_prompt = """Use only the following pieces of context to answer the question. 
@@ -170,7 +175,7 @@ def question_answer(class_id, query):
             qa_prompt | llm | StrOutputParser()
     )
 
-    chat_history = get_chat_history()
+    chat_history = get_chat_history(class_id=class_id, member_id=member_id)
 
     return rag_chain.invoke(
         {

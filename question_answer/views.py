@@ -9,11 +9,12 @@ class LiveQuestionAnswer(GenericAPIView):
     validate_serializer_class = LiveQueryValidateSerializer
 
     def get(self, request):
+        filter_serializer = self.validate_serializer_class(data=request.GET)
         class_id = request.GET.get('class_id')
         query = request.GET.get('query')
         ask_expert = int(request.GET.get('ask_expert'))
-        filter_serializer = self.validate_serializer_class(data=request.GET)
-
+        member_id = request.GET.get('member_id')
+        package_id = request.GET.get('package_id')
         if not filter_serializer.is_valid():
             return Response(filter_serializer.errors)
 
@@ -22,7 +23,7 @@ class LiveQuestionAnswer(GenericAPIView):
             Your query will be answered in 24-48 hours.
             Thanks for asking!"""
         else:
-            result = question_answer(class_id=class_id, query=query)
+            result = question_answer(class_id=class_id, member_id=member_id, query=query)
 
         res = {
             query: result
