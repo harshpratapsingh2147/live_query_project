@@ -113,7 +113,7 @@ def get_chat_history(class_id, member_id):
 def get_contextualized_question(input: dict):
     client = anthropic.Anthropic(
         # defaults to os.environ.get("ANTHROPIC_API_KEY")
-        api_key="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",
+        api_key=config('ANTHRO_API_KEY'),
     )
     if input.get("chat_history"):
         contextualize_q_system_prompt = f"""
@@ -178,7 +178,7 @@ def question_answer(class_id, member_id, query):
 
     client = anthropic.Anthropic(
         # defaults to os.environ.get("ANTHROPIC_API_KEY")
-        api_key="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",
+        api_key= config('ANTHRO_API_KEY'),
     )
 
     message = client.messages.create(
