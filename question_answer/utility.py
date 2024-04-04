@@ -8,7 +8,7 @@ import anthropic
 from .get_chat_history import get_latest_chat_history
 
 chroma_ip = config('CHROMA_IP')
-
+anthro_api_kye = config('ANTHRO_API_KEY')
 api_key = config('OPEN_AI_API_KEY')
 BASE_TRANSCRIPT_PATH = config('BASE_TRANSCRIPT_PATH')
 
@@ -113,7 +113,7 @@ def get_chat_history(class_id, member_id):
 def get_contextualized_question(input: dict):
     client = anthropic.Anthropic(
         # defaults to os.environ.get("ANTHROPIC_API_KEY")
-        api_key=config('ANTHRO_API_KEY'),
+        api_key=anthro_api_kye,
     )
     if input.get("chat_history"):
         contextualize_q_system_prompt = f"""
@@ -178,7 +178,7 @@ def question_answer(class_id, member_id, query):
 
     client = anthropic.Anthropic(
         # defaults to os.environ.get("ANTHROPIC_API_KEY")
-        api_key= config('ANTHRO_API_KEY'),
+        api_key=anthro_api_kye,
     )
 
     message = client.messages.create(
