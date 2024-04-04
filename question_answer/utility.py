@@ -2,14 +2,11 @@ import torch
 from transformers import AutoTokenizer, AutoModel
 from langchain.vectorstores import Chroma
 from .customEmbeddingsClass import CustomOpenAIEmbeddings
-from langchain_community.chat_models import ChatOpenAI
-from langchain_core.output_parsers import StrOutputParser
 from decouple import config
-from langchain_core.messages import HumanMessage, AIMessage
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.prompts import MessagesPlaceholder
 import chromadb
+import anthropic
 from .get_chat_history import get_latest_chat_history
+
 chroma_ip = config('CHROMA_IP')
 
 api_key = config('OPEN_AI_API_KEY')
@@ -53,6 +50,8 @@ def maxsim(query_embedding, document_embedding):
 
 
 def get_top_k_docs(query, class_id):
+    print("here is the query...................")
+    print(query)
     top_k = 6
     scores = []
     client = chromadb.HttpClient(host=chroma_ip, port=8000)
@@ -98,96 +97,101 @@ def get_top_k_docs(query, class_id):
 
 
 def format_docs(docs):
-    return "\n\n".join(doc for doc in docs)
+    return "\n\n".join(f"<document>{doc}</document>" for doc in docs)
 
 
 def get_chat_history(class_id, member_id):
     chat_history_list = get_latest_chat_history(class_id=class_id, member_id=member_id)
     chat_list = []
     for chat_history in chat_history_list:
-        chat_list.append(HumanMessage(content=chat_history['question']))
-        chat_list.append(AIMessage(content=chat_history['response']))
-    print(chat_list)
-    return chat_list
+        chat_list.append(f"human: {chat_history['question']}")
+        chat_list.append(f"AI: {chat_history['response']}")
 
-
-def get_contextualized_qa_chain():
-    llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.3, openai_api_key=api_key)
-
-    contextualize_q_system_prompt = """
-    You will be provided with a chat history between AI and human.
-    You will also be provided with a latest question from human which might context in the chat history, formulate a standalone question 
-    which can be understood without the chat history. You MUST NOT answer the question,
-    just reformulate the latest user question if needed, otherwise return it as is.
-    """
-
-    contextualize_q_prompt = ChatPromptTemplate.from_messages(
-        [
-            ("system", contextualize_q_system_prompt),
-            MessagesPlaceholder(variable_name="chat_history"),
-            ("human", "{question}"),
-        ]
-    )
-    contextualize_q_chain = contextualize_q_prompt | llm | StrOutputParser()
-    return contextualize_q_chain
+    return "\n".join(chat for chat in chat_list)
 
 
 def get_contextualized_question(input: dict):
+    client = anthropic.Anthropic(
+        # defaults to os.environ.get("ANTHROPIC_API_KEY")
+        api_key="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",
+    )
     if input.get("chat_history"):
-        contextualized_qa_chain = get_contextualized_qa_chain()
-        contextualized_question = contextualized_qa_chain.invoke({
-            "chat_history": input['chat_history'],
-            "question": input['question']
-        })
-        return contextualized_question
+        contextualize_q_system_prompt = f"""
+        You will be provided with a chat history between AI and human.
+        You will also be provided with a latest question from human which might context in the chat history.
+        <chat-history>
+        {input['chat_history']}
+        </chat-history>
+        <instructions>
+        1. formulate a standalone question 
+            which can be understood without the chat history.
+        2. You MUST NOT answer the question
+        3. just reformulate the latest user question if needed, otherwise return it as is.
+        4. Do not add any extra line like 'Here is the standalone question based on the latest user query:'
+        </instructions>
+        """
+
+        message = client.messages.create(
+            model="claude-3-opus-20240229",
+            max_tokens=1000,
+            temperature=0,
+            system=contextualize_q_system_prompt,
+            messages=[
+                {
+                    "role": "user",
+                    "content": input['question']
+                }
+            ]
+        )
+        return message.content[0].text
     else:
         return input["question"]
 
 
-def get_context(class_id, query, chat_history):
-    contextualized_question = get_contextualized_question({"chat_history": chat_history, "question": query})
-    print("here is the context question.......................")
-    print(contextualized_question)
-    return get_top_k_docs(query=contextualized_question, class_id=class_id)
+def get_context(class_id, query):
+    return get_top_k_docs(query=query, class_id=class_id)
 
 
 def question_answer(class_id, member_id, query):
-    llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.3, openai_api_key=api_key)
+    chat_history = get_chat_history(class_id=class_id, member_id=member_id)
+    contextualized_question = get_contextualized_question({"chat_history": chat_history, "question": query})
 
-    # qa_system_prompt = """Use only the following pieces of context to answer the question.
-    # If the question cannot be answered using the context or the chat_history, just say that you don't know the answer.
-    # Do not try to make up an answer from some other source.
-    # Always say "thanks for asking!" at the end of the answer.
-    #
-    # {context} """
+    context = get_context(class_id, contextualized_question)
 
-    qa_system_prompt = """Use only the following pieces of context to answer the question in detail.
-    Reformat the answer in bullet points. 
-    If the question cannot be answered using the context or the chat_history, just say that you don't know the answer. 
-    Do not try to make up an answer from some other source.
-    Always say "thanks for asking!" at the end of the answer. 
+    qa_system_prompt = f"""
+    Use only the following documents to answer the question.
+    {context}
+    
+    <instructions>
+    Follow these steps:
+    1. Identify five key points from the provided context.
+    2. Generate detailed explanation from these key points.
+    3. If the question cannot be answered using the documents, just say that you don't know the answer. 
+    4. Do not try to make up an answer from some external source.
+    </instructions>
+    
+    <example>
+    Explanation: <Explanation of the provided context in detail> 
+    Bullet points: <Five Bullet points from explanation>
+    </example>
+    """
 
-    {context} """
+    client = anthropic.Anthropic(
+        # defaults to os.environ.get("ANTHROPIC_API_KEY")
+        api_key="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",
+    )
 
-    qa_prompt = ChatPromptTemplate.from_messages(
-        [
-            ("system", qa_system_prompt),
-            MessagesPlaceholder(variable_name="chat_history"),
-            ("human", "{question}"),
+    message = client.messages.create(
+        model="claude-3-opus-20240229",
+        max_tokens=1000,
+        temperature=0.0,
+        system=qa_system_prompt,
+        messages=[
+            {"role": "user", "content": contextualized_question}
         ]
     )
 
-    rag_chain = (
-            qa_prompt | llm | StrOutputParser()
-    )
+    return message.content[0].text
 
-    chat_history = get_chat_history(class_id=class_id, member_id=member_id)
 
-    return rag_chain.invoke(
-        {
-            "question": query,
-            "chat_history": chat_history,
-            "context": get_context(class_id, query, chat_history)
-        }
-    )
 
