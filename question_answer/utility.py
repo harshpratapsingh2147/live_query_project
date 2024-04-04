@@ -158,7 +158,6 @@ def question_answer(class_id, member_id, query):
     If the question cannot be answered using the context or the chat_history, just say that you don't know the answer. 
     Do not try to make up an answer from some other source.
     Always say "thanks for asking!" at the end of the answer. 
-    Use three sentences maximum and keep the answer concise.
 
     {context} """
 
