@@ -14,3 +14,4 @@ torch
 torchvision
 django-cors-headers
 tiktoken
+anthropic
