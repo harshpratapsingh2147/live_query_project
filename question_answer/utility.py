@@ -154,7 +154,15 @@ def get_context(class_id, query, chat_history):
 def question_answer(class_id, member_id, query):
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.3, openai_api_key=api_key)
 
-    qa_system_prompt = """Use only the following pieces of context to answer the question. 
+    # qa_system_prompt = """Use only the following pieces of context to answer the question.
+    # If the question cannot be answered using the context or the chat_history, just say that you don't know the answer.
+    # Do not try to make up an answer from some other source.
+    # Always say "thanks for asking!" at the end of the answer.
+    #
+    # {context} """
+
+    qa_system_prompt = """Use only the following pieces of context to answer the question in detail.
+    Reformat the answer in bullet points. 
     If the question cannot be answered using the context or the chat_history, just say that you don't know the answer. 
     Do not try to make up an answer from some other source.
     Always say "thanks for asking!" at the end of the answer. 
