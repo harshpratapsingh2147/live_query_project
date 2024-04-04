@@ -53,7 +53,7 @@ def maxsim(query_embedding, document_embedding):
 
 
 def get_top_k_docs(query, class_id):
-    top_k = 3
+    top_k = 6
     scores = []
     client = chromadb.HttpClient(host=chroma_ip, port=8000)
 
@@ -66,10 +66,11 @@ def get_top_k_docs(query, class_id):
 
     print(BASE_TRANSCRIPT_PATH)
     relevant_docs = vectordb.max_marginal_relevance_search(query,
-                                                           k=3,
+                                                           k=8,
                                                            filter={"source": f"{BASE_TRANSCRIPT_PATH}{class_id}_transcript.txt"})
 
-
+    print("relevant docs are here...............................................")
+    print(relevant_docs)
     # Load the tokenizer and the model
     tokenizer = AutoTokenizer.from_pretrained("colbert-ir/colbertv2.0")
     model = AutoModel.from_pretrained("colbert-ir/colbertv2.0")
@@ -93,8 +94,6 @@ def get_top_k_docs(query, class_id):
 
     # Sort the scores by highest to lowest and print
     sorted_data = sorted(scores, key=lambda x: x['score'], reverse=True)[:top_k]
-    print("relevant docs are here...............................................")
-    print(sorted_data)
     return format_docs([data['document'] for data in sorted_data])
 
 
