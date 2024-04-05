@@ -171,8 +171,8 @@ def question_answer(class_id, member_id, query):
     </instructions>
     
     <example>
-    Explanation: <Explanation of the provided context in detail> 
-    Bullet points: <Five Bullet points from explanation>
+    Explanation: <Explanation of the provided context in brief and to the point.> 
+    Bullet points: <Five Bullet points from context>
     </example>
     """
 
