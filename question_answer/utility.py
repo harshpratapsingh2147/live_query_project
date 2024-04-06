@@ -40,16 +40,19 @@ def get_contextualized_question(chat_history, query):
 
     if chat_history:
         contextualize_q_system_prompt = f"""
-        You will be provided with a chat history between AI and human.
-        You will also be provided with a latest question from human which might context in the chat history.
+        You are provided with a chat-history between AI and human.
+        
         <chat-history>
             {chat_history}
         </chat-history>
+        
+        You will be given a new question from user.
+        The question may or may not reference the chat-history.
+        
         <instructions>
-            1. Formulate a standalone question which can be understood without the chat history.
+            1. Formulate a standalone question which can be understood without the chat history only if latest user question has pronouns or articles referring to someone or something in the chat-history, otherwise return it as is.
             2. You MUST NOT answer the question
-            3. Just reformulate the latest user question if needed, otherwise return it as is.
-            4. Do not add any extra line like 'Here is the standalone question based on the latest user query:'
+            3. Do not add any extra line like 'Here is the standalone question based on the latest user query:'
         </instructions>
         """
 
