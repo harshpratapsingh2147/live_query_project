@@ -29,3 +29,11 @@ def get_latest_chat_history(class_id, member_id):
     return latest_chat_list
 
 
+def get_processed_chat_history(class_id, member_id):
+    chat_history_list = get_latest_chat_history(class_id=class_id, member_id=member_id)
+    chat_list = []
+    for chat_history in chat_history_list:
+        chat_list.append(f"human: {chat_history['question']}")
+        chat_list.append(f"AI: {chat_history['response']}")
+
+    return "\n".join(chat for chat in chat_list)

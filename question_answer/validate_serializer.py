@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from .utility import valid_integer
+
+
+def valid_integer(value):
+    if not value.isdigit():
+        return False
+    return True
 
 
 class LiveQueryValidateSerializer(serializers.Serializer):
