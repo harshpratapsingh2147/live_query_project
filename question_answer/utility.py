@@ -65,7 +65,7 @@ def question_answer(class_id, member_id, query):
     print(chat_history)
     contextualized_question = get_contextualized_question(chat_history=chat_history, query=query)
 
-    context = get_top_k_docs(query=query, class_id=class_id)
+    context = get_top_k_docs(query=contextualized_question, class_id=class_id)
 
     qa_system_prompt = f"""
     
