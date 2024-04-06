@@ -11,7 +11,7 @@ def anthropic_api_call(prompt, query, temperature=0, max_tokens=1000):
     )
 
     message = client.messages.create(
-        model="claude-3-sonnet-20240229",
+        model="claude-3-opus-20240229",
         max_tokens=max_tokens,
         temperature=temperature,
         system=prompt,
