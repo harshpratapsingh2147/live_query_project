@@ -18,7 +18,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - chroma_data:/home/harsh/live_query_proj/live_query_project
+      - chroma_data:/chroma/data
 
 volumes:
   chroma_data:
