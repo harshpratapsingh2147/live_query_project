@@ -10,9 +10,7 @@ def valid_integer(value):
 class LiveQueryValidateSerializer(serializers.Serializer):
     class_id = serializers.CharField(required=True)
     query = serializers.CharField(required=True)
-    ask_expert = serializers.CharField(required=True)
     member_id = serializers.CharField(required=True)
-    package_id = serializers.CharField(required=False)
 
     def validate_class_id(self, value):
         if not valid_integer(value):
@@ -28,18 +26,6 @@ class LiveQueryValidateSerializer(serializers.Serializer):
             )
         return value
 
-    def validate_package_id(self, value):
-        if not valid_integer(value):
-            raise serializers.ValidationError(
-                "package_id can only be integer"
-            )
-        return value
-
-    def validate_ask_expert(self, value):
-        if value not in ['0', '1']:
-            raise serializers.ValidationError(
-                "ask_expert can only be 0 or 1"
-            )
 
 
 
