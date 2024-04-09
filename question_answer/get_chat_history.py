@@ -15,18 +15,22 @@ def get_chat_from_db(class_id, member_id):
         curr = conn.cursor()
         row_count = curr.execute(q)
         rows = curr.fetchall()
-        return rows[0][0]
+        if len(rows) > 0:
+            return rows[0][0]
+        return None
     except pymysql.MySQLError as err:
         print(err)
 
 
 def get_latest_chat_history(class_id, member_id):
     chat_str = get_chat_from_db(class_id=class_id, member_id=member_id)
-    chat_dict = json.loads(chat_str)
-    chat_time_list = chat_dict.keys()
-    sorted_chat_time = sorted(chat_time_list, reverse=True)[0:1]
-    latest_chat_list = [chat_dict[chat_time] for chat_time in sorted_chat_time]
-    return latest_chat_list
+    if chat_str:
+        chat_dict = json.loads(chat_str)
+        chat_time_list = chat_dict.keys()
+        sorted_chat_time = sorted(chat_time_list, reverse=True)[0:1]
+        latest_chat_list = [chat_dict[chat_time] for chat_time in sorted_chat_time]
+        return latest_chat_list
+    return []
 
 
 def get_processed_chat_history(class_id, member_id):
