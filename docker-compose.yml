@@ -6,7 +6,7 @@ services:
       - "8002:8002"
     volumes:
       - .:/app
-    command: python manage.py runserver 0.0.0.0:8002
+    command: gunicorn live_query_resoultion.wsgi:application -c gunicorn_config.py --bind 0.0.0.0:8002
     environment:
       PYTHONUNBUFFERED: 1
     depends_on:

@@ -15,3 +15,4 @@ torchvision
 django-cors-headers
 tiktoken
 anthropic
+gunicorn
