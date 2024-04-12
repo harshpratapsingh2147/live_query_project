@@ -81,7 +81,8 @@ def question_answer(class_id, member_id, query):
         2. Generate brief answer from these relevant points.
         3. If the question cannot be answered using the documents, just say that you don't know the answer. 
         4. Do not try to make up an answer from some external source.
-        5. Structure the answer in the format below:
+        5. You must not use phrases like "Based on the information provided in the documents" in the answer
+        6. Structure the answer in the format below:
         
         Dear Student,
         a plain text answer. 

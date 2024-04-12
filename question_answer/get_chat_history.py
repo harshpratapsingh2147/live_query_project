@@ -27,7 +27,7 @@ def get_latest_chat_history(class_id, member_id):
     if chat_str:
         chat_dict = json.loads(chat_str)
         chat_time_list = chat_dict.keys()
-        sorted_chat_time = sorted(chat_time_list, reverse=True)[0:1]
+        sorted_chat_time = sorted(chat_time_list, reverse=True)[0:5]
         latest_chat_list = [chat_dict[chat_time] for chat_time in sorted_chat_time]
         return latest_chat_list
     return []
