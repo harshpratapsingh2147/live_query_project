@@ -4,7 +4,7 @@ from langchain.vectorstores import Chroma
 
 from .customEmbeddingsClass import CustomOpenAIEmbeddings
 from .get_chat_history import get_processed_chat_history
-from .anthro_utility import anthropic_api_call
+from .anthro_api_utility import anthropic_api_call
 from .reranking_utility import rerank
 
 chroma_ip = config('CHROMA_IP')
@@ -62,6 +62,7 @@ def get_contextualized_question(chat_history, query):
 
 
 def question_answer(class_id, member_id, query):
+    print("inside the anthropic api ...............................................")
 
     chat_history = get_processed_chat_history(class_id=class_id, member_id=member_id)
     print("here is the chat history.................")
