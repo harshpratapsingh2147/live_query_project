@@ -1,5 +1,6 @@
 from rest_framework.generics import GenericAPIView
-from .utility import question_answer
+#from .utility import question_answer
+from .groq_utility import question_answer
 # from .gpt_utility import question_answer
 from .validate_serializer import LiveQueryValidateSerializer
 from rest_framework.response import Response
