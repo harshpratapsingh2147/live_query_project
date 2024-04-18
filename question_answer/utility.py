@@ -79,7 +79,7 @@ def question_answer(class_id, member_id, query):
     <instructions>
     Follow these steps:
         1. Identify the most relevant points to answer the question.
-        2. Generate brief answer from these relevant points.
+        2. Generate brief answer of not more than 100 words from these relevant points.
         3. If the question cannot be answered using the documents, just say that you don't know the answer. 
         4. Do not try to make up an answer from some external source.
         5. You must not use phrases like "Based on the information provided in the documents" in the answer
