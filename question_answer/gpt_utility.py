@@ -96,7 +96,7 @@ def get_chat_history(class_id, member_id):
 
 
 def get_contextualized_qa_chain():
-    llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, openai_api_key=api_key)
+    llm = ChatOpenAI(model_name="gpt-4-turbo", temperature=0, openai_api_key=api_key)
 
     contextualize_q_system_prompt = """
     You are provided with a chat-history between AI and human.
@@ -142,7 +142,7 @@ def get_context(class_id, query, chat_history):
 
 
 def question_answer(class_id, member_id, query):
-    llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.3, openai_api_key=api_key)
+    llm = ChatOpenAI(model_name="gpt-4-turbo", temperature=0.3, openai_api_key=api_key)
     print("inside the GPT api ...............................................")
     # qa_system_prompt = """Use only the following pieces of context to answer the question.
     # If the question cannot be answered using the context or the chat_history, just say that you don't know the answer.
@@ -156,10 +156,10 @@ def question_answer(class_id, member_id, query):
     Use the following documents to answer the question.
     {context}
     
-    
+    <instruction>
     Follow these steps:
         1. Identify the most relevant points to answer the question.
-        2. Generate brief and to the point answer in less than 80 tokens from these relevant points.
+        2. Generate brief and to the point answer in less than 20 tokens from these relevant points.
         3. If the question cannot be answered using the context, just say that you don't know the answer. 
         4. Do not try to make up an answer from any external source.
         5. You must not use phrases like "Based on the information provided in the documents" in the answer
@@ -169,7 +169,7 @@ def question_answer(class_id, member_id, query):
         a plain text answer. 
         Thank you.
         
-    
+    </instruction>
     
     """
 
