@@ -119,7 +119,7 @@ def question_answer(class_id, member_id, query):
     <instruction>
     Follow these steps:
         1. Identify the most relevant points to answer the question.
-        2. Generate brief and to the point answer in less than 50 tokens from these relevant points.
+        2. Generate brief and to the point answer in less than 35 tokens from these relevant points.
         3. If the question cannot be answered using the context, just say that you don't know the answer. 
         4. Do not try to make up an answer from any external source.
         5. You must not use phrases like "Based on the information provided in the documents" in the answer
