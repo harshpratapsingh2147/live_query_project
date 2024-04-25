@@ -103,8 +103,8 @@ def get_contextualized_question(input: dict):
 
 
 def get_context(class_id, query, chat_history):
-    contextualized_question = get_contextualized_question({"chat_history": chat_history, "question": query})
-    return get_top_k_docs(query=contextualized_question, class_id=class_id)
+    # contextualized_question = get_contextualized_question({"chat_history": chat_history, "question": query})
+    return get_top_k_docs(query=query, class_id=class_id)
 
 
 def question_answer(class_id, member_id, query):
@@ -146,11 +146,19 @@ def question_answer(class_id, member_id, query):
     )
 
     chat_history = get_chat_history(class_id=class_id, member_id=member_id)
+    # context_query = get_contextualized_question(query)
+    context = get_context(class_id, query, chat_history)
 
-    return rag_chain.invoke(
+    print("creating final answer..........")
+    print("start_time: ", datetime.datetime.now())
+    final_ans = rag_chain.invoke(
         {
             "question": query,
             "chat_history": chat_history,
-            "context": get_context(class_id, query, chat_history)
+            "context": context
         }
     )
+
+    print("end_time: ", datetime.datetime.now())
+
+    return final_ans
