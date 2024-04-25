@@ -1,3 +1,5 @@
+import datetime
+
 import pymysql
 from decouple import config
 import json
@@ -10,10 +12,16 @@ PASS = config('DB_PASS')
 
 def get_chat_from_db(class_id, member_id):
     try:
+        print("connection to db for chat history...............")
+        print("start_time:", datetime.datetime.now())
         conn = pymysql.connect(host=HOST, user=USER, passwd=PASS, db=NAME, connect_timeout=5)
-        q = f"Select chat_text from live_query_conversation where member_id = {member_id} and video_id = {class_id} ORDER BY created_time desc"
+        print("end_time: ", datetime.datetime.now())
+        q = f"Select chat_text from live_query_conversation where member_id = {member_id} and video_id = {class_id} ORDER BY created_time desc LIMIT 1"
         curr = conn.cursor()
+        print("executing query for chat history...............")
+        print("start_time:", datetime.datetime.now())
         row_count = curr.execute(q)
+        print("end_time:", datetime.datetime.now())
         rows = curr.fetchall()
         if len(rows) > 0:
             return rows[0][0]
@@ -24,6 +32,7 @@ def get_chat_from_db(class_id, member_id):
 
 def get_latest_chat_history(class_id, member_id):
     chat_str = get_chat_from_db(class_id=class_id, member_id=member_id)
+
     if chat_str:
         chat_dict = json.loads(chat_str)
         chat_time_list = chat_dict.keys()
