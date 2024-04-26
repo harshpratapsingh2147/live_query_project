@@ -16,8 +16,8 @@ BASE_TRANSCRIPT_PATH = config('BASE_TRANSCRIPT_PATH')
 
 
 def get_top_k_docs(query, class_id):
-    top_k = 6
-    client = chromadb.HttpClient(host='46.4.66.230', port=8000)
+    top_k = 3
+    client = chromadb.HttpClient(host=chroma_ip, port=8000)
 
     # Get the stored vector db
     embedding = CustomOpenAIEmbeddings(openai_api_key=api_key)
