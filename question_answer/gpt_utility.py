@@ -45,6 +45,7 @@ def get_contextualized_qa_chain():
     Follow these steps:
     1. Formulate a standalone question which can be understood without the chat history only if latest user question or statements has pronouns or articles referring to someone or something in the chat-history, otherwise return it as is.
     2. You MUST NOT answer the question or statement. Just reformulated if needed or return as it is.
+    3. DO not add "Dear student" OR "thank you".
     </instruction>
     
     <example>
