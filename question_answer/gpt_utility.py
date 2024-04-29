@@ -6,8 +6,9 @@ from decouple import config
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.prompts import MessagesPlaceholder
 import chromadb
-from .get_chat_history import get_processed_chat_history
+from .get_chat_history import get_processed_chat_history, update_create_chat_history
 from .reranking_utility import rerank
+import threading
 
 chroma_ip = config('CHROMA_IP')
 
@@ -73,16 +74,15 @@ def get_contextualized_question(chat_history, query):
             "chat_history": chat_history,
             "question": query
         })
-        print("hello!!!!!!!!!!! here is the context question..........")
+        print("here is the context question..........")
         print(contextualized_question)
         return contextualized_question
     else:
         return query
 
 
-def question_answer(class_id, member_id, query):
+def question_answer(class_id, member_id, package_id, query, refresh):
     llm = ChatOpenAI(model_name="gpt-4-turbo", temperature=0.3, openai_api_key=api_key)
-    print("inside the GPT api ...............................................")
 
     qa_system_prompt = """
 
@@ -124,10 +124,22 @@ def question_answer(class_id, member_id, query):
     context_query = get_contextualized_question(chat_history, query)
     context = get_top_k_docs(query=context_query, class_id=class_id)
 
-    return rag_chain.invoke(
+    res = rag_chain.invoke(
         {
             "question": query,
             "chat_history": chat_history,
             "context": context
         }
     )
+
+    thread = threading.Thread(
+        target=update_create_chat_history,
+        args=(query, refresh, class_id, member_id, package_id, res)
+    )
+    thread.start()
+
+    return res
+
+
+
+
