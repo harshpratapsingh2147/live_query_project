@@ -11,7 +11,7 @@ class LiveQueryValidateSerializer(serializers.Serializer):
     class_id = serializers.CharField(required=True)
     query = serializers.CharField(required=True)
     member_id = serializers.CharField(required=True)
-    refresh = serializers.CharField(required=True)
+    old_conversation = serializers.CharField(required=True)
     package_id = serializers.CharField(required=True)
 
     def validate_class_id(self, value):
@@ -28,10 +28,10 @@ class LiveQueryValidateSerializer(serializers.Serializer):
             )
         return value
 
-    def validate_refresh(self, value):
-        if not valid_integer(value) and value not in [0, 1]:
+    def validate_old_conversation(self, value):
+        if value not in ['true', 'false']:
             raise serializers.ValidationError(
-                "refresh can only be 0 or 1"
+                "old_conversation can only be true or false"
             )
         return value
 

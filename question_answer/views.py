@@ -14,7 +14,7 @@ class LiveQuestionAnswer(GenericAPIView):
         class_id = request.GET.get('class_id')
         query = request.GET.get('query')
         member_id = request.GET.get('member_id')
-        refresh = request.GET.get('refresh')
+        old_conversation = request.GET.get('old_conversation')
         package_id = request.GET.get('package_id')
 
         if not filter_serializer.is_valid():
@@ -24,7 +24,7 @@ class LiveQuestionAnswer(GenericAPIView):
             class_id=class_id,
             member_id=member_id,
             query=query,
-            refresh=refresh,
+            old_conversation=old_conversation,
             package_id=package_id
         )
 

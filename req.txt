@@ -16,3 +16,4 @@ django-cors-headers
 tiktoken
 anthropic
 gunicorn
+psycopg2

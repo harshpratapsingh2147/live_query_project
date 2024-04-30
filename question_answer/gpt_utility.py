@@ -81,7 +81,7 @@ def get_contextualized_question(chat_history, query):
         return query
 
 
-def question_answer(class_id, member_id, package_id, query, refresh):
+def question_answer(class_id, member_id, package_id, query, old_conversation):
     llm = ChatOpenAI(model_name="gpt-4-turbo", temperature=0.3, openai_api_key=api_key)
 
     qa_system_prompt = """
@@ -134,7 +134,7 @@ def question_answer(class_id, member_id, package_id, query, refresh):
 
     thread = threading.Thread(
         target=update_create_chat_history,
-        args=(query, refresh, class_id, member_id, package_id, res)
+        args=(query, old_conversation, class_id, member_id, package_id, res)
     )
     thread.start()
 

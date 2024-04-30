@@ -59,8 +59,8 @@ def get_processed_chat_history(class_id, member_id):
     return chat_list
 
 
-def update_create_chat_history(query, refresh, class_id, member_id, package_id, res):
-    if not int(refresh):
+def update_create_chat_history(query, old_conversation, class_id, member_id, package_id, res):
+    if old_conversation == 'false':
         chat = json.dumps({
             str(datetime.datetime.now()): {
                 "question": query,
