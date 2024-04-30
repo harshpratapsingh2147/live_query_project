@@ -20,7 +20,7 @@ class LiveQuestionAnswer(GenericAPIView):
         if not filter_serializer.is_valid():
             return Response(filter_serializer.errors)
 
-        result = question_answer(
+        res, unique_id = question_answer(
             class_id=class_id,
             member_id=member_id,
             query=query,
@@ -28,10 +28,12 @@ class LiveQuestionAnswer(GenericAPIView):
             package_id=package_id
         )
 
-        res = {
-            query: result
+        response = {
+            query: res,
+            "unique_id": unique_id,
         }
-        return Response(res)
+
+        return Response(response)
 
 
 

@@ -3,7 +3,7 @@ import torch
 
 
 def format_docs(docs):
-    return "\n\n".join(f"<document>{doc}</document>" for doc in docs)
+    return "\n\n".join(doc for doc in docs)
 
 
 # Function to compute MaxSim

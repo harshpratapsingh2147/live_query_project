@@ -8,7 +8,6 @@ from langchain_core.prompts import MessagesPlaceholder
 import chromadb
 from .get_chat_history import get_processed_chat_history, update_create_chat_history
 from .reranking_utility import rerank
-import threading
 
 chroma_ip = config('CHROMA_IP')
 
@@ -81,6 +80,10 @@ def get_contextualized_question(chat_history, query):
         return query
 
 
+def get_chat_unique_id(id, time_stamp):
+    return str(id) + "_" + str(time_stamp)
+
+
 def question_answer(class_id, member_id, package_id, query, old_conversation):
     llm = ChatOpenAI(model_name="gpt-4-turbo", temperature=0.3, openai_api_key=api_key)
 
@@ -123,6 +126,8 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
     print(chat_history)
     context_query = get_contextualized_question(chat_history, query)
     context = get_top_k_docs(query=context_query, class_id=class_id)
+    print("here is the context............")
+    print(context)
 
     res = rag_chain.invoke(
         {
@@ -132,13 +137,16 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
         }
     )
 
-    thread = threading.Thread(
-        target=update_create_chat_history,
-        args=(query, old_conversation, class_id, member_id, package_id, res)
+    id, time_stamp = update_create_chat_history(
+        query=query,
+        old_conversation=old_conversation,
+        class_id=class_id,
+        member_id=member_id,
+        package_id=package_id,
+        res=res
     )
-    thread.start()
 
-    return res
+    return res, get_chat_unique_id(id=id, time_stamp=time_stamp)
 
 
 

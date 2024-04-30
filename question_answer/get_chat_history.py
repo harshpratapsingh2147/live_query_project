@@ -61,11 +61,12 @@ def get_processed_chat_history(class_id, member_id):
 
 def update_create_chat_history(query, old_conversation, class_id, member_id, package_id, res):
     if old_conversation == 'false':
+        time_stamp = datetime.datetime.now()
         chat = json.dumps({
-            str(datetime.datetime.now()): {
+            str(time_stamp): {
                 "question": query,
                 "response": res,
-                "time": str(datetime.datetime.now()),
+                "time": str(time_stamp),
                 "like": None
             }
         })
@@ -73,13 +74,20 @@ def update_create_chat_history(query, old_conversation, class_id, member_id, pac
         INSERT INTO live_query_conversation (member_id, chat_text, package_id, video_id, created_time)
     VALUES (%s, %s, %s, %s, %s);
         """
-
         try:
             conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
             curr = conn.cursor()
-            curr.execute(q, (member_id, chat, package_id, class_id, datetime.datetime.now()))
+            curr.execute(q, (member_id, chat, package_id, class_id, time_stamp))
             conn.commit()
+            get_query = f"""
+            Select id from live_query_conversation where member_id={member_id} and video_id={class_id} ORDER BY 
+            created_time desc LIMIT 1 """
+
+            curr.execute(get_query)
+            row = curr.fetchall()
             conn.close()
+            id = row[0][0]
+            return id, time_stamp
         except psycopg2.Error as e:
             print("Error connecting to PostgresSQL:", e)
 
@@ -94,14 +102,15 @@ def update_create_chat_history(query, old_conversation, class_id, member_id, pac
             curr = conn.cursor()
             curr.execute(already_exist_q)
             rows = curr.fetchall()
+            id = rows[0][0]
+            chat_text = rows[0][1]
+            time_stamp = datetime.datetime.now()
             if len(rows) > 0:
-                id = rows[0][0]
-                chat_text = rows[0][1]
                 chat_dict = json.loads(chat_text)
-                chat_dict[str(datetime.datetime.now())] = {
+                chat_dict[str(time_stamp)] = {
                         "question": query,
                         "response": res,
-                        "time": str(datetime.datetime.now()),
+                        "time": str(time_stamp),
                         "like": None
                 }
                 chat = json.dumps(chat_dict)
@@ -110,9 +119,10 @@ def update_create_chat_history(query, old_conversation, class_id, member_id, pac
                 id = %s
                 """
 
-                curr.execute(update_q, (chat, datetime.datetime.now(), id))
+                curr.execute(update_q, (chat, time_stamp, id))
                 conn.commit()
                 conn.close()
+                return id, time_stamp
         except psycopg2.Error as e:
             print("Error connecting to PostgresSQL:", e)
 
