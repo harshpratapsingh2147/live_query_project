@@ -1,4 +1,11 @@
 from rest_framework import serializers
+import re
+
+class UniqueIDValidator:
+    def __call__(self, value):
+        pattern = re.compile(r'^\d+_\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d+$')
+        if not pattern.match(value):
+            raise serializers.ValidationError("Invalid unique_id format")
 
 
 def valid_integer(value):
@@ -41,4 +48,18 @@ class LiveQueryValidateSerializer(serializers.Serializer):
                 "member_id can only be integer"
             )
         return value
+
+
+class LikeDislikeSerializer(serializers.Serializer):
+    action = serializers.CharField(required=True)
+    unique_id = serializers.CharField(validators=[UniqueIDValidator()], required=True)
+
+    def validate_action(self, value):
+        if value not in ['0', '1', '2']:
+            raise serializers.ValidationError(
+                "action can only be 0, 1, 2"
+            )
+        return value
+
+
 

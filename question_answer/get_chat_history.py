@@ -127,12 +127,33 @@ def update_create_chat_history(query, old_conversation, class_id, member_id, pac
             print("Error connecting to PostgresSQL:", e)
 
 
+def update_like_dislike_status(action, id, time_stamp):
 
+    try:
+        conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
+        curr = conn.cursor()
 
+        q = f"""
+        Select chat_text from live_query_conversation where id={id}
+        """
+        curr.execute(q)
+        row = curr.fetchall()
+        chat_text = row[0][0]
+        chat_dict = json.loads(chat_text)
+        chat_dict[time_stamp]['like'] = action
+        chat = json.dumps(chat_dict)
 
-
-
-
+        update_q = f"""
+        UPDATE live_query_conversation set chat_text=%s where 
+        id = %s
+        """
+        curr.execute(update_q, (chat, id))
+        conn.commit()
+        conn.close()
+        return True
+    except psycopg2.Error as e:
+        print("Error connecting to PostgresSQL:", e)
+        return False
 
 
 
