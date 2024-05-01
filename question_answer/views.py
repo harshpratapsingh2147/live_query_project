@@ -1,8 +1,8 @@
 from rest_framework.generics import GenericAPIView
 #from .utility import question_answer
 from .gpt_utility import question_answer
-from .validate_serializer import LiveQueryValidateSerializer, LikeDislikeSerializer
-from .get_chat_history import update_like_dislike_status
+from .validate_serializer import LiveQueryValidateSerializer, LikeDislikeSerializer, ChatHistorySerializer
+from .get_chat_history import update_like_dislike_status, get_chat_history_for_ask_expert
 from rest_framework.response import Response
 # Create your views here.
 
@@ -57,6 +57,35 @@ class LikeDislike(GenericAPIView):
             return Response("like status updated successfully")
         else:
             return Response("could not update status")
+
+
+class ChatHistory(GenericAPIView):
+    validate_serializer_class = ChatHistorySerializer
+
+    def get(self, request):
+        filter_serializer = self.validate_serializer_class(data=request.GET)
+
+        if not filter_serializer.is_valid():
+            return Response(filter_serializer.errors)
+
+        class_id = request.GET.get('class_id')
+        member_id = request.GET.get('member_id')
+
+        chat_list = get_chat_history_for_ask_expert(
+            class_id=class_id,
+            member_id=member_id
+        )
+
+        print(chat_list)
+
+        return Response(chat_list)
+
+
+
+
+
+
+
 
 
 

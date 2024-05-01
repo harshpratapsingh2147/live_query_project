@@ -48,6 +48,13 @@ def get_latest_chat_history(class_id, member_id):
 #
 #     return "\n".join(chat for chat in chat_list)
 
+def get_chat_history_for_ask_expert(class_id, member_id):
+    chat_history_list = get_latest_chat_history(class_id=class_id, member_id=member_id)
+    chat_list = []
+    for chat_history in chat_history_list:
+        chat_list.append(chat_history['question'])
+    return chat_list
+
 
 def get_processed_chat_history(class_id, member_id):
     chat_history_list = get_latest_chat_history(class_id=class_id, member_id=member_id)

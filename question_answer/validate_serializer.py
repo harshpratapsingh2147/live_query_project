@@ -62,4 +62,24 @@ class LikeDislikeSerializer(serializers.Serializer):
         return value
 
 
+class ChatHistorySerializer(serializers.Serializer):
+    class_id = serializers.CharField(required=True)
+    member_id = serializers.CharField(required=True)
+
+    def validate_class_id(self, value):
+        if not valid_integer(value):
+            raise serializers.ValidationError(
+                "class_id can only be integer"
+            )
+        return value
+
+    def validate_member_id(self, value):
+        if not valid_integer(value):
+            raise serializers.ValidationError(
+                "member_id can only be integer"
+            )
+        return value
+
+
+
 
