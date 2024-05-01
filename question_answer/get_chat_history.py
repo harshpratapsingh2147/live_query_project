@@ -140,7 +140,8 @@ def update_like_dislike_status(action, id, time_stamp):
         row = curr.fetchall()
         chat_text = row[0][0]
         chat_dict = json.loads(chat_text)
-        chat_dict[time_stamp]['like'] = action
+        like_value = chat_dict[time_stamp]['like']
+        chat_dict[time_stamp]['like'] = '0' if like_value == action else action
         chat = json.dumps(chat_dict)
 
         update_q = f"""
