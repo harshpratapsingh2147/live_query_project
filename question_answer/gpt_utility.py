@@ -16,7 +16,7 @@ BASE_TRANSCRIPT_PATH = config('BASE_TRANSCRIPT_PATH')
 
 
 def get_top_k_docs(query, class_id):
-    top_k = 3
+    top_k = 5
     client = chromadb.HttpClient(host=chroma_ip, port=8000)
 
     # Get the stored vector db
