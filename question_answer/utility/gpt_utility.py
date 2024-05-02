@@ -1,13 +1,16 @@
 from langchain.vectorstores import Chroma
-from .customEmbeddingsClass import CustomOpenAIEmbeddings
 from langchain_community.chat_models import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
-from decouple import config
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.prompts import MessagesPlaceholder
 import chromadb
-from .get_chat_history import get_processed_chat_history, update_create_chat_history
+from decouple import config
+
+from question_answer.customEmbeddingsClass import CustomOpenAIEmbeddings
+from .db_operations_utility import get_processed_chat_history, update_create_chat_history
 from .reranking_utility import rerank
+from .enum_utility import Prompt
+
 
 chroma_ip = config('CHROMA_IP')
 
@@ -35,25 +38,7 @@ def get_top_k_docs(query, class_id):
 def get_contextualized_qa_chain():
     llm = ChatOpenAI(model_name="gpt-4-turbo", temperature=0, openai_api_key=api_key)
 
-    contextualize_q_system_prompt = """
-    You are provided with a chat-history between AI and human.
-
-    You will be given a new question or statement from human.
-    The question may or may not reference the chat-history.
-    
-    <instruction>
-    Follow these steps:
-    1. Formulate a standalone question which can be understood without the chat history only if latest user question or statements has pronouns or articles referring to someone or something in the chat-history, otherwise return it as is.
-    2. You MUST NOT answer the question or statement. Just reformulated if needed or return as it is.
-    3. DO not add "Dear student" OR "thank you".
-    </instruction>
-    
-    <example>
-    human: "When did they last discuss this issue?"
-    Reformulated question: "When was the last discussion about this issue?"
-    </example>
-    
-    """
+    contextualize_q_system_prompt = Prompt.contextualize_q_system_prompt.value
 
     contextualize_q_prompt = ChatPromptTemplate.from_messages(
         [
@@ -87,30 +72,7 @@ def get_chat_unique_id(id, time_stamp):
 def question_answer(class_id, member_id, package_id, query, old_conversation):
     llm = ChatOpenAI(model_name="gpt-4-turbo", temperature=0.3, openai_api_key=api_key)
 
-    qa_system_prompt = """
-
-    Use the following documents to answer the question.
-    {context}
-    
-    <instruction>
-    1. Understand the question asked by the user.
-    2. Look for most appropriate response in maximum 100 words. Make answer as crisp and to the point.
-    3 .If the answer to query can not be answered using the content provided by me, Reply
-    "Dear Student,
-    
-    The Query asked by you is beyond the scope of this lecture. Please ask me another question from the content taught in the class.
-    
-    Thank you."
-    4. Do not use your own knowledge or general knowledge to answer the question asked by the user. Only confine yourself to the content provided by me to provide the best possible answer.
-    5. Structure the answer in the format below:
-        Dear Student,
-        
-        A plain text answer.
-       
-        Thank you.
-    </instruction>
-    
-    """
+    qa_system_prompt = Prompt.qa_system_prompt.value
 
     qa_prompt = ChatPromptTemplate.from_messages(
         [
@@ -125,12 +87,8 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
     )
 
     chat_history = get_processed_chat_history(class_id=class_id, member_id=member_id)
-    print("here is the chat_history")
-    print(chat_history)
     context_query = get_contextualized_question(chat_history, query)
     context = get_top_k_docs(query=context_query, class_id=class_id)
-    print("here is the context............")
-    print(context)
 
     res = rag_chain.invoke(
         {

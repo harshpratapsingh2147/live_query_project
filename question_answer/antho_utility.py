@@ -5,7 +5,7 @@ from langchain.vectorstores import Chroma
 from .customEmbeddingsClass import CustomOpenAIEmbeddings
 from .get_chat_history import get_processed_chat_history
 from .anthro_api_utility import anthropic_api_call
-from .reranking_utility import rerank
+from live_query_resolution.question_answer.utility.reranking_utility import rerank
 
 chroma_ip = config('CHROMA_IP')
 api_key = config('OPEN_AI_API_KEY')

@@ -1,8 +1,8 @@
 from rest_framework.generics import GenericAPIView
 #from .utility import question_answer
-from .gpt_utility import question_answer
+from question_answer.utility.gpt_utility import question_answer
 from .validate_serializer import LiveQueryValidateSerializer, LikeDislikeSerializer, ChatHistorySerializer
-from .get_chat_history import update_like_dislike_status, get_chat_history_for_ask_expert
+from question_answer.utility.db_operations_utility import update_like_dislike_status, get_chat_history_for_ask_expert
 from rest_framework.response import Response
 # Create your views here.
 
