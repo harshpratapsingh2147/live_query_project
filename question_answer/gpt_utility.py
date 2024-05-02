@@ -93,18 +93,21 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
     {context}
     
     <instruction>
-    Follow these steps:
-        1. Identify the most relevant points to answer the question.
-        2. Generate brief and to the point answer from these relevant points.
-        3. If the question cannot be answered using the context, just say that you don't know the answer. 
-        4. Do not try to make up an answer from any external source.
-        5. You must not use phrases like "Based on the information provided in the documents" in the answer
-        6. Structure the answer in the format below:
-        
+    1. Understand the question asked by the user.
+    2. Look for most appropriate response in maximum 100 words. Make answer as crisp and to the point.
+    3 .If the answer to query can not be answered using the content provided by me, Reply
+    "Dear Student,
+    
+    The Query asked by you is beyond the scope of this lecture. Please ask me another question from the content taught in the class.
+    
+    Thank you."
+    4. Do not use your own knowledge or general knowledge to answer the question asked by the user. Only confine yourself to the content provided by me to provide the best possible answer.
+    5. Structure the answer in the format below:
         Dear Student,
-        a plain text answer. 
-        Thank you.
         
+        A plain text answer.
+       
+        Thank you.
     </instruction>
     
     """
