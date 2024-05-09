@@ -1,5 +1,4 @@
-import datetime
-
+import markdown
 from langchain.vectorstores import Chroma
 from langchain_community.chat_models import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
@@ -93,8 +92,6 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
     context_query = get_contextualized_question(chat_history, query)
     context = get_top_k_docs(query=context_query, class_id=class_id)
 
-    print("starting rag chain.................")
-    print(datetime.datetime.now())
     res = rag_chain.invoke(
         {
             "question": query,
@@ -102,8 +99,6 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
             "context": context
         }
     )
-    print("ending rag chain....................")
-    print(datetime.datetime.now())
 
     id, time_stamp = update_create_chat_history(
         query=query,
@@ -113,8 +108,9 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
         package_id=package_id,
         res=res
     )
+    markdown_res = markdown.markdown(res)
 
-    return res, get_chat_unique_id(id=id, time_stamp=time_stamp)
+    return markdown_res, get_chat_unique_id(id=id, time_stamp=time_stamp)
 
 
 
