@@ -1,3 +1,5 @@
+import datetime
+
 from langchain.vectorstores import Chroma
 from langchain_community.chat_models import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
@@ -29,9 +31,12 @@ def get_top_k_docs(query, class_id):
         embedding_function=embedding
     )
 
-    relevant_docs = vectordb.max_marginal_relevance_search(query,
-                                                           k=8,
-                                                           filter={"source": f"{BASE_TRANSCRIPT_PATH}{class_id}_transcript.txt"})
+    relevant_docs = vectordb.max_marginal_relevance_search(
+        query,
+        k=8,
+        filter={"source": f"{BASE_TRANSCRIPT_PATH}{class_id}_transcript.txt"}
+    )
+
     return rerank(query=query, relevant_docs=relevant_docs, top_k=top_k)
 
 
@@ -58,8 +63,6 @@ def get_contextualized_question(chat_history, query):
             "chat_history": chat_history,
             "question": query
         })
-        print("here is the context question..........")
-        print(contextualized_question)
         return contextualized_question
     else:
         return query
@@ -90,6 +93,8 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
     context_query = get_contextualized_question(chat_history, query)
     context = get_top_k_docs(query=context_query, class_id=class_id)
 
+    print("starting rag chain.................")
+    print(datetime.datetime.now())
     res = rag_chain.invoke(
         {
             "question": query,
@@ -97,6 +102,8 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
             "context": context
         }
     )
+    print("ending rag chain....................")
+    print(datetime.datetime.now())
 
     id, time_stamp = update_create_chat_history(
         query=query,
