@@ -13,7 +13,6 @@ from .db_operations_utility import get_processed_chat_history, update_create_cha
 from .reranking_utility import rerank
 from .enum_utility import Prompt
 
-
 chroma_ip = config('CHROMA_IP')
 
 api_key = config('OPEN_AI_API_KEY')
@@ -103,7 +102,6 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
 
     formatted_text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', res)
 
-
     id, time_stamp = update_create_chat_history(
         query=query,
         old_conversation=old_conversation,
@@ -112,13 +110,5 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
         package_id=package_id,
         res=formatted_text
     )
-    print("here is the original response................")
-    print(res)
-    # markdown_res = markdown.markdown(res)
-    print("here is the formatted text................")
-    print(formatted_text)
+
     return formatted_text, get_chat_unique_id(id=id, time_stamp=time_stamp)
-
-
-
-
