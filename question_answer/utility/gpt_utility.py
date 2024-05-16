@@ -1,3 +1,5 @@
+import datetime
+
 import markdown
 from langchain.vectorstores import Chroma
 from langchain_community.chat_models import ChatOpenAI
@@ -40,7 +42,7 @@ def get_top_k_docs(query, class_id):
 
 
 def get_contextualized_qa_chain():
-    llm = ChatOpenAI(model_name="gpt-4-turbo", temperature=0, openai_api_key=api_key)
+    llm = ChatOpenAI(model_name="gpt-4o", temperature=0, openai_api_key=api_key)
 
     contextualize_q_system_prompt = Prompt.contextualize_q_system_prompt.value
 
@@ -72,7 +74,7 @@ def get_chat_unique_id(id, time_stamp):
 
 
 def question_answer(class_id, member_id, package_id, query, old_conversation):
-    llm = ChatOpenAI(model_name="gpt-4-turbo", temperature=0.3, openai_api_key=api_key)
+    llm = ChatOpenAI(model_name="gpt-4o", temperature=0.3, openai_api_key=api_key)
 
     qa_system_prompt = Prompt.qa_system_prompt.value
 
@@ -92,6 +94,8 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
     context_query = get_contextualized_question(chat_history, query)
     context = get_top_k_docs(query=context_query, class_id=class_id)
 
+    print("rag chain started.........")
+    print(datetime.datetime.now())
     res = rag_chain.invoke(
         {
             "question": query,
@@ -99,6 +103,8 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
             "context": context
         }
     )
+    print("rag chain ended............")
+    print(datetime.datetime.now())
 
     id, time_stamp = update_create_chat_history(
         query=query,
