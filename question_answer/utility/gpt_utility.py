@@ -71,6 +71,9 @@ def get_contextualized_question(chat_history, query):
 def get_chat_unique_id(id, time_stamp):
     return str(id) + "_" + str(time_stamp)
 
+def format_string(text):
+
+
 
 def question_answer(class_id, member_id, package_id, query, old_conversation):
     llm = ChatOpenAI(model_name="gpt-4o", temperature=0.3, openai_api_key=api_key)
@@ -101,18 +104,20 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
         }
     )
 
+    formatted_text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', res)
+
+
     id, time_stamp = update_create_chat_history(
         query=query,
         old_conversation=old_conversation,
         class_id=class_id,
         member_id=member_id,
         package_id=package_id,
-        res=res
+        res=formatted_text
     )
     print("here is the original response................")
     print(res)
     # markdown_res = markdown.markdown(res)
-    formatted_text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', res)
     print("here is the formatted text................")
     print(formatted_text)
     return formatted_text, get_chat_unique_id(id=id, time_stamp=time_stamp)
