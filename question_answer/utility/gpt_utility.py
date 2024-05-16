@@ -71,9 +71,6 @@ def get_contextualized_question(chat_history, query):
 def get_chat_unique_id(id, time_stamp):
     return str(id) + "_" + str(time_stamp)
 
-def format_string(text):
-
-
 
 def question_answer(class_id, member_id, package_id, query, old_conversation):
     llm = ChatOpenAI(model_name="gpt-4o", temperature=0.3, openai_api_key=api_key)
