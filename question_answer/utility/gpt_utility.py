@@ -111,6 +111,8 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
     )
     # markdown_res = markdown.markdown(res)
     formatted_text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', res)
+    print("here is the formatted text................")
+    print(formatted_text)
     return formatted_text, get_chat_unique_id(id=id, time_stamp=time_stamp)
 
 
