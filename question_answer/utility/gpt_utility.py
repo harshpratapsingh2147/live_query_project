@@ -109,6 +109,8 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
         package_id=package_id,
         res=res
     )
+    print("here is the original response................")
+    print(res)
     # markdown_res = markdown.markdown(res)
     formatted_text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', res)
     print("here is the formatted text................")
