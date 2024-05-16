@@ -94,8 +94,6 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
     context_query = get_contextualized_question(chat_history, query)
     context = get_top_k_docs(query=context_query, class_id=class_id)
 
-    print("rag chain started.........")
-    print(datetime.datetime.now())
     res = rag_chain.invoke(
         {
             "question": query,
@@ -103,8 +101,6 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
             "context": context
         }
     )
-    print("rag chain ended............")
-    print(datetime.datetime.now())
 
     id, time_stamp = update_create_chat_history(
         query=query,
