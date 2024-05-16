@@ -1,5 +1,4 @@
-import datetime
-
+import re
 import markdown
 from langchain.vectorstores import Chroma
 from langchain_community.chat_models import ChatOpenAI
@@ -110,11 +109,9 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
         package_id=package_id,
         res=res
     )
-    markdown_res = markdown.markdown(res)
-    print("here is the markdown response.......................................")
-    print(markdown_res)
-
-    return markdown_res, get_chat_unique_id(id=id, time_stamp=time_stamp)
+    # markdown_res = markdown.markdown(res)
+    formatted_text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', res)
+    return formatted_text, get_chat_unique_id(id=id, time_stamp=time_stamp)
 
 
 
