@@ -17,4 +17,3 @@ tiktoken
 anthropic
 gunicorn
 psycopg2
-markdown

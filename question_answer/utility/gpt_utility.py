@@ -1,5 +1,4 @@
 import re
-import markdown
 from langchain.vectorstores import Chroma
 from langchain_community.chat_models import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
