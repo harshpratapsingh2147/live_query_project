@@ -110,9 +110,9 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
         package_id=package_id,
         res=res
     )
-    markdown_res = markdown.markdown(res)
+    # markdown_res = markdown.markdown(res)
 
-    return markdown_res, get_chat_unique_id(id=id, time_stamp=time_stamp)
+    return res, get_chat_unique_id(id=id, time_stamp=time_stamp)
 
 
 
