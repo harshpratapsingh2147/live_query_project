@@ -99,7 +99,7 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
         }
     )
 
-    formatted_text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', res)
+    formatted_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', res)
 
     id, time_stamp = update_create_chat_history(
         query=query,
