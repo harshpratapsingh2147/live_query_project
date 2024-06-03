@@ -11,7 +11,7 @@ class Prompt(Enum):
     <instruction>
     1. Understand the question asked by the user.
     2. Look for most relevant points.
-    3. Use these points to form a brief answer
+    3. Use these points to form an in-depth yet a concise answer
     4. If the answer to query can not be answered using the content provided by me, Reply
     "Dear Student,
     
