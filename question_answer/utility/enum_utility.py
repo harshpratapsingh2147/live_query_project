@@ -10,15 +10,16 @@ class Prompt(Enum):
     
     <instruction>
     1. Understand the question asked by the user.
-    2. Look for most appropriate response in maximum 100 words. Make answer as crisp and to the point.
-    3 .If the answer to query can not be answered using the content provided by me, Reply
+    2. Look for most relevant points.
+    3. Use these points to form a brief answer
+    4. If the answer to query can not be answered using the content provided by me, Reply
     "Dear Student,
     
     The Query asked by you is beyond the scope of this lecture. Please ask me another question from the content taught in the class.
     
     Thank you."
-    4. Do not use your own knowledge or general knowledge to answer the question asked by the user. Only confine yourself to the content provided by me to provide the best possible answer.
-    5. Structure the answer in the format below:
+    5. Do not use your own knowledge or general knowledge to answer the question asked by the user. Only confine yourself to the content provided by me to provide the best possible answer.
+    6. Structure the answer in the format below:
         Dear Student,
         
         A plain text answer.

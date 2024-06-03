@@ -19,7 +19,7 @@ BASE_TRANSCRIPT_PATH = config('BASE_TRANSCRIPT_PATH')
 
 
 def get_top_k_docs(query, class_id):
-    top_k = 5
+    top_k = 8
     client = chromadb.HttpClient(host=chroma_ip, port=8000)
 
     # Get the stored vector db
@@ -89,8 +89,11 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
 
     chat_history = get_processed_chat_history(class_id=class_id, member_id=member_id)
     context_query = get_contextualized_question(chat_history, query)
+    print("Here is the context query..............")
+    print(context_query)
     context = get_top_k_docs(query=context_query, class_id=class_id)
-
+    print("here is the context................")
+    print(context)
     res = rag_chain.invoke(
         {
             "question": query,
