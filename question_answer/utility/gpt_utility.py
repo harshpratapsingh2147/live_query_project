@@ -19,20 +19,21 @@ BASE_TRANSCRIPT_PATH = config('BASE_TRANSCRIPT_PATH')
 
 
 def get_top_k_docs(query, class_id):
-    top_k = 8
+    top_k = 6
     client = chromadb.HttpClient(host=chroma_ip, port=8000)
 
     # Get the stored vector db
     embedding = CustomOpenAIEmbeddings(openai_api_key=api_key)
     vectordb = Chroma(
         client=client,
-        embedding_function=embedding
+        embedding_function=embedding,
+        collection_name="live_query"
     )
 
     relevant_docs = vectordb.max_marginal_relevance_search(
         query,
         k=8,
-        filter={"source": f"{BASE_TRANSCRIPT_PATH}{class_id}_transcript.txt"}
+        filter={"source": f"{BASE_TRANSCRIPT_PATH}{class_id}/{class_id}_gemini_transcript_improved.txt"}
     )
 
     return rerank(query=query, relevant_docs=relevant_docs, top_k=top_k)
@@ -71,7 +72,7 @@ def get_chat_unique_id(id, time_stamp):
 
 
 def question_answer(class_id, member_id, package_id, query, old_conversation):
-    llm = ChatOpenAI(model_name="gpt-4o", temperature=0.3, openai_api_key=api_key)
+    llm = ChatOpenAI(model_name="gpt-4o", temperature=0.2, openai_api_key=api_key)
 
     qa_system_prompt = Prompt.qa_system_prompt.value
 

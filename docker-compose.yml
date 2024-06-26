@@ -18,7 +18,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - chroma_data:/chroma
+      - chroma_data_gemini:/chroma
 
   chat-db:
       container_name: 'chat-db'
@@ -33,5 +33,5 @@ services:
         - chat_data:/var/lib/postgresql/data
 
 volumes:
-  chroma_data:
+  chroma_data_gemini:
   chat_data:
