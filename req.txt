@@ -17,3 +17,5 @@ tiktoken
 anthropic
 gunicorn
 psycopg2
+boto3
+beautifulsoup4
