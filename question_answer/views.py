@@ -11,22 +11,29 @@ class LiveQuestionAnswer(GenericAPIView):
     validate_serializer_class = LiveQueryValidateSerializer
 
     def get(self, request):
-        filter_serializer = self.validate_serializer_class(data=request.GET)
+        filter_serializer = self.validate_serializer_class(data=request.query_params.dict())
         class_id = request.GET.get('class_id')
         query = request.GET.get('query')
         member_id = request.GET.get('member_id')
         old_conversation = request.GET.get('old_conversation')
         package_id = request.GET.get('package_id')
-
+        article_id = request.GET.get('article_id')
+        ca_query = eval(request.GET.get('ca_query',"False").title())
+        
         if not filter_serializer.is_valid():
             return Response(filter_serializer.errors)
+        
+        if ca_query:
+            class_id=int(article_id)
+
 
         res, unique_id = question_answer(
             class_id=class_id,
             member_id=member_id,
             query=query,
             old_conversation=old_conversation,
-            package_id=package_id
+            package_id=package_id, 
+            ca_query=ca_query
         )
 
         response = {

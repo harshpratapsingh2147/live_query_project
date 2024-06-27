@@ -20,6 +20,8 @@ class LiveQueryValidateSerializer(serializers.Serializer):
     member_id = serializers.CharField(required=True)
     old_conversation = serializers.CharField(required=True)
     package_id = serializers.CharField(required=True)
+    article_id = serializers.CharField(required=False)
+    ca_query = serializers.CharField(required=False)
 
     def validate_class_id(self, value):
         if not valid_integer(value):
@@ -45,9 +47,28 @@ class LiveQueryValidateSerializer(serializers.Serializer):
     def validate_package_id(self, value):
         if not valid_integer(value):
             raise serializers.ValidationError(
-                "member_id can only be integer"
+                "package_id can only be integer"
             )
         return value
+    
+    def validate_article_id(self, value):
+        if not valid_integer(value):
+            raise serializers.ValidationError(
+                "article_id can only be integer"
+            )
+        return value
+    
+    def to_internal_value(self, data):
+        # data["ca_query"] = eval(data.get('ca_query',"False").title())
+        if data["ca_query"]=="true":
+            data["package_id"]=1
+            data["class_id"]=1
+            print("article_id",data.get("article_id"))
+            if not data.get("article_id"):
+                data["article_id"] = "abcd"
+            
+        return super().to_internal_value(data)
+
 
 
 class LikeDislikeSerializer(serializers.Serializer):
