@@ -40,11 +40,10 @@ class CAEmbeddingsView(GenericAPIView):
             err_msg = filter_serializer.errors
             logger.warning({"error": err_msg})
             print(err_msg)
-            raise ExtendedValidationError(
-                detail=err_msg,
-                msg="Invalid Request Parameters",
-                # request_id=request.request_id,
-            )
+            # return Response(err_msg, status=400)
+            data = CommonService.default_response(
+                {"details":err_msg}, True, "Invalid Request Params")
+            return Response(data, status=400)
         
         # add the word in db
         data = filter_serializer.validated_data

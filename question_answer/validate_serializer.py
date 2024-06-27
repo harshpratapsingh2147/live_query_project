@@ -60,7 +60,7 @@ class LiveQueryValidateSerializer(serializers.Serializer):
     
     def to_internal_value(self, data):
         # data["ca_query"] = eval(data.get('ca_query',"False").title())
-        if data["ca_query"]=="true":
+        if data.get("ca_query")=="true":
             data["package_id"]=1
             data["class_id"]=1
             print("article_id",data.get("article_id"))

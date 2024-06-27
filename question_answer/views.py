@@ -4,6 +4,7 @@ from question_answer.utility.gpt_utility import question_answer
 from .validate_serializer import LiveQueryValidateSerializer, LikeDislikeSerializer, ChatHistorySerializer
 from question_answer.utility.db_operations_utility import update_like_dislike_status, get_chat_history_for_ask_expert
 from rest_framework.response import Response
+from core.utility import CommonService
 # Create your views here.
 
 
@@ -21,8 +22,11 @@ class LiveQuestionAnswer(GenericAPIView):
         ca_query = eval(request.GET.get('ca_query',"False").title())
         
         if not filter_serializer.is_valid():
-            return Response(filter_serializer.errors)
-        
+            err_msg = filter_serializer.errors
+            data = CommonService.default_response(
+                {"details":err_msg}, True, "Invalid Request Params")
+            return Response(data, status=400)
+                
         if ca_query:
             class_id=int(article_id)
 
