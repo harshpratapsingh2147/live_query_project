@@ -35,7 +35,8 @@ def get_top_k_docs(query, class_id, ca_query=False):
         filter_data = {"article_id":class_id}
         collection_name = ca_collection_name
     else:
-        filter_data = {"source": f"{BASE_TRANSCRIPT_PATH}{class_id}_transcript.txt"}
+        # filter_data = {"source": f"{BASE_TRANSCRIPT_PATH}{class_id}_transcript.txt"}
+        filter_data = {"source": f"{BASE_TRANSCRIPT_PATH}{class_id}/{class_id}_gemini_transcript_improved.txt"}
         collection_name = "live_query"
    
     vectordb = Chroma(
