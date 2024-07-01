@@ -129,40 +129,45 @@ def update_create_chat_history(query, old_conversation, class_id, member_id, pac
 
 
 
+def create_ca_record(query, article_id, member_id, res):
+    time_stamp = datetime.datetime.now()
+    chat = json.dumps({
+        str(time_stamp): {
+            "question": query,
+            "response": res,
+            "time": str(time_stamp),
+            "like": None
+        }
+    })
+    q = """
+    INSERT INTO ca_live_query_conversation (member_id, chat_text, article_id, created_time)
+    VALUES (%s, %s, %s, %s);
+    """
+    try:
+        print(("value check",member_id, chat, article_id, time_stamp))
+        conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
+        curr = conn.cursor()
+        curr.execute(q, (member_id, chat, article_id, time_stamp))
+        conn.commit()
+        get_query = f"""
+        Select id from ca_live_query_conversation where member_id={member_id} and article_id={article_id} ORDER BY 
+        created_time desc LIMIT 1 """
+
+        curr.execute(get_query)
+        row = curr.fetchall()
+        conn.close()
+        print("query id:", row)
+        if row and row[0]:
+            id = row[0][0]
+        
+        return id, time_stamp
+    except psycopg2.Error as e:
+        print("Error connecting to PostgresSQL:", e)
+
 def update_create_ca_chat_history(query, old_conversation, article_id, member_id, res):
 
     if old_conversation == 'false':
-        time_stamp = datetime.datetime.now()
-        chat = json.dumps({
-            str(time_stamp): {
-                "question": query,
-                "response": res,
-                "time": str(time_stamp),
-                "like": None
-            }
-        })
-        q = """
-        INSERT INTO ca_live_query_conversation (member_id, chat_text, article_id, created_time)
-        VALUES (%s, %s, %s, %s);
-        """
-        try:
-            print(("value check",member_id, chat, article_id, time_stamp))
-            conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
-            curr = conn.cursor()
-            curr.execute(q, (member_id, chat, article_id, time_stamp))
-            conn.commit()
-            get_query = f"""
-            Select id from ca_live_query_conversation where member_id={member_id} and article_id={article_id} ORDER BY 
-            created_time desc LIMIT 1 """
-
-            curr.execute(get_query)
-            row = curr.fetchall()
-            conn.close()
-            id = row[0][0]
-            print("query id:", row)
-            return id, time_stamp
-        except psycopg2.Error as e:
-            print("Error connecting to PostgresSQL:", e)
+        return create_ca_record(query, article_id, member_id, res)
 
     else:
         already_exist_q = f"""
@@ -175,6 +180,8 @@ def update_create_ca_chat_history(query, old_conversation, article_id, member_id
             curr = conn.cursor()
             curr.execute(already_exist_q)
             rows = curr.fetchall()
+            if not rows or (not rows[0]):
+                return create_ca_record(query, article_id, member_id, res)
             id = rows[0][0]
             chat_text = rows[0][1]
             time_stamp = datetime.datetime.now()
