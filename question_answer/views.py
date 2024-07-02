@@ -28,7 +28,8 @@ class LiveQuestionAnswer(GenericAPIView):
             return Response(data, status=400)
                 
         if ca_query:
-            class_id=int(article_id)
+            class_id=int(article_id) if article_id else None
+            chat_session_id = filter_serializer.validated_data.get('chat_session_id')
 
 
         res, unique_id = question_answer(
@@ -37,13 +38,15 @@ class LiveQuestionAnswer(GenericAPIView):
             query=query,
             old_conversation=old_conversation,
             package_id=package_id, 
-            ca_query=ca_query
+            ca_query=ca_query,
+            chat_session_id = chat_session_id
         )
 
         response = {
             query: res,
             "unique_id": unique_id,
         }
+        response.update({"chat_session_id":chat_session_id} if chat_session_id else {})
 
         return Response(response)
 

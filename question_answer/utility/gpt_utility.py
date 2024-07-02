@@ -32,7 +32,7 @@ def get_top_k_docs(query, class_id, ca_query=False):
     embedding = CustomOpenAIEmbeddings(openai_api_key=api_key)
     
     if ca_query:
-        filter_data = {"article_id":class_id}
+        filter_data = {"article_id":class_id} if class_id else {}
         collection_name = ca_collection_name
     else:
         # filter_data = {"source": f"{BASE_TRANSCRIPT_PATH}{class_id}_transcript.txt"}
@@ -86,7 +86,7 @@ def get_chat_unique_id(id, time_stamp):
     return str(id) + "_" + str(time_stamp)
 
 
-def question_answer(class_id, member_id, package_id, query, old_conversation, ca_query=False):
+def question_answer(class_id, member_id, package_id, query, old_conversation, ca_query=False, chat_session_id=None):
     llm = ChatOpenAI(model_name="gpt-4o", temperature=0.2, openai_api_key=api_key)
 
     qa_system_prompt = Prompt.qa_system_prompt.value
@@ -102,7 +102,10 @@ def question_answer(class_id, member_id, package_id, query, old_conversation, ca
     rag_chain = (
             qa_prompt | llm | StrOutputParser()
     )
-    chat_history = get_processed_chat_history(class_id=class_id, member_id=member_id, ca_query=ca_query)
+    chat_history = get_processed_chat_history(
+        class_id=class_id, member_id=member_id, ca_query=ca_query, chat_session_id=chat_session_id
+    )
+    print(chat_history)
     context_query = get_contextualized_question(chat_history, query)
     print("Here is the context query..............")
     print(context_query)
@@ -126,7 +129,8 @@ def question_answer(class_id, member_id, package_id, query, old_conversation, ca
         old_conversation=old_conversation,
         article_id=class_id,
         member_id=member_id,
-        res=formatted_text
+        res=formatted_text,
+        chat_session_id=chat_session_id
     )
     else:
         id, time_stamp = update_create_chat_history(
