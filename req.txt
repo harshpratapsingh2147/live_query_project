@@ -14,6 +14,7 @@ torch
 torchvision
 django-cors-headers
 tiktoken
-anthropic
+# anthropic
 gunicorn
 psycopg2
+gevent
