@@ -44,8 +44,8 @@ def parse_html(html_str):
 
 def create_document(text, title, article_id):
     pages = [Document(page_content=text, metadata={"article_id":article_id, "title":title})]
-    chunk_size = 500
-    chunk_overlap = 4
+    chunk_size = 800
+    chunk_overlap = 200
 
     r_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
