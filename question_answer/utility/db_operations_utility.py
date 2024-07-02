@@ -256,4 +256,17 @@ def update_like_dislike_status(action, id, time_stamp):
         return False
 
 
+def get_new_chat_session_id(member_id):
+    try:
+        conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
+        q = f"Select chat_session_id from ca_live_query_conversation where member_id = {member_id} and article_id is null ORDER BY created_time desc LIMIT 1"
+        curr = conn.cursor()
+        curr.execute(q)
+        rows = curr.fetchall()
+        ans = 0
+        if len(rows) > 0:
+            ans = rows[0][0]
+        return ans+1
+    except psycopg2.Error as e:
+        print("Error connecting to PostgresSQL:", e)
 

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 import re
+from question_answer.utility.db_operations_utility import get_new_chat_session_id
 
 
 class UniqueIDValidator:
@@ -71,7 +72,7 @@ class LiveQueryValidateSerializer(serializers.Serializer):
                 elif (not data.get("chat_session_id")) and (
                     data.get("old_conversation") == "false"
                 ):
-                    data["chat_session_id"] = 1
+                    data["chat_session_id"] = get_new_chat_session_id(data.get("member_id"))
             # else:
                 # data["article_id"] = "abcd"
 
