@@ -29,7 +29,7 @@ class LiveQuestionAnswer(GenericAPIView):
                 
         if ca_query:
             class_id=int(article_id) if article_id else None
-            chat_session_id = filter_serializer.validated_data.get('chat_session_id')
+        chat_session_id = filter_serializer.validated_data.get('chat_session_id')
 
 
         res, unique_id = question_answer(
