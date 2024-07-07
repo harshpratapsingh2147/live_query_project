@@ -59,13 +59,11 @@ def get_contextualized_qa_chain():
 def get_contextualized_question(chat_history, query):
     if chat_history:
         contextualized_qa_chain = get_contextualized_qa_chain()
-        # contextualized_question = contextualized_qa_chain.invoke({
-        #     "chat_history": chat_history,
-        #     "question": query
-        # })
-        # return contextualized_question
-        time.sleep(2)
-        return query
+        contextualized_question = contextualized_qa_chain.invoke({
+            "chat_history": chat_history,
+            "question": query
+        })
+        return contextualized_question
     else:
         return query
 
@@ -93,20 +91,18 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
 
     chat_history = get_processed_chat_history(class_id=class_id, member_id=member_id)
     context_query = get_contextualized_question(chat_history, query)
-    print("Here is the context query..............")
-    print(context_query)
+    # print("Here is the context query..............")
+    # print(context_query)
     context = get_top_k_docs(query=context_query, class_id=class_id)
-    print("here is the context................")
-    print(context)
-    # res = rag_chain.invoke(
-    #     {
-    #         "question": query,
-    #         "chat_history": chat_history,
-    #         "context": context
-    #     }
-    # )
-    time.sleep(2)
-    res = "I do not have enough information about the question......................"
+    # print("here is the context................")
+    # print(context)
+    res = rag_chain.invoke(
+        {
+            "question": query,
+            "chat_history": chat_history,
+            "context": context
+        }
+    )
 
     formatted_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', res)
     formatted_text = formatted_text.replace('\n', '<br>')
