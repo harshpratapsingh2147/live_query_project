@@ -8,5 +8,5 @@ reload = True
 accesslog = "/app/access.log"
 errorlog = "/app/error.log"
 
-max_requests = 10  # Force workers to restart after handling 1000 requests
-max_requests_jitter = 0  # Add randomness to max_requests to avoid simultaneous restarts
+max_requests = 100  # Force workers to restart after handling 1000 requests
+max_requests_jitter = 50  # Add randomness to max_requests to avoid simultaneous restarts
