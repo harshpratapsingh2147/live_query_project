@@ -32,7 +32,7 @@ class LiveQuestionAnswer(GenericAPIView):
         chat_session_id = filter_serializer.validated_data.get('chat_session_id')
 
 
-        res, unique_id = question_answer(
+        res, unique_id, metadata= question_answer(
             class_id=class_id,
             member_id=member_id,
             query=query,
@@ -46,6 +46,8 @@ class LiveQuestionAnswer(GenericAPIView):
             query: res,
             "unique_id": unique_id,
         }
+        if ca_query:
+            response["suggested_links"] = metadata
         response.update({"chat_session_id":chat_session_id} if chat_session_id else {})
 
         return Response(response)

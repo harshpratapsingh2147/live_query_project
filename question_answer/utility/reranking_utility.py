@@ -1,4 +1,5 @@
 from transformers import AutoTokenizer, AutoModel
+import json
 import torch
 
 
@@ -26,7 +27,7 @@ def maxsim(query_embedding, document_embedding):
     return avg_max_sim
 
 
-def rerank(query, relevant_docs, top_k=6):
+def rerank(query, relevant_docs, top_k=6, ca_query=False):
     scores = []
     # Load the tokenizer and the model
     tokenizer = AutoTokenizer.from_pretrained("colbert-ir/colbertv2.0")
@@ -47,9 +48,20 @@ def rerank(query, relevant_docs, top_k=6):
         scores.append({
             "score": score.item(),
             "document": document.page_content,
+            "metadata":document.metadata
         })
 
     # Sort the scores by highest to lowest and print
     sorted_data = sorted(scores, key=lambda x: x['score'], reverse=True)[:top_k]
-    return format_docs([data['document'] for data in sorted_data])
+    metadata_list = [data["metadata"] for data in sorted_data]
+    unique_metadata_list = list({json.dumps(d, sort_keys=True): d for d in metadata_list}.values())
 
+    result = (
+        format_docs([data["document"] for data in sorted_data])
+        if not ca_query
+        else {
+            "context":format_docs([data["document"] for data in sorted_data]),
+            "metadata":[{"article_id":data["article_id"],"url":data["url"]} for data in list(unique_metadata_list)]
+        }
+    )
+    return result

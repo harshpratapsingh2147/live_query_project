@@ -51,7 +51,7 @@ def get_top_k_docs(query, class_id, ca_query=False):
         filter=filter_data
     )
 
-    return rerank(query=query, relevant_docs=relevant_docs, top_k=top_k)
+    return rerank(query=query, relevant_docs=relevant_docs, top_k=top_k, ca_query=ca_query)
 
 
 def get_contextualized_qa_chain():
@@ -110,6 +110,11 @@ def question_answer(class_id, member_id, package_id, query, old_conversation, ca
     print("Here is the context query..............")
     print(context_query)
     context = get_top_k_docs(query=context_query, class_id=class_id, ca_query=ca_query)
+    metadata = ""
+    if ca_query:
+        metadata = context["metadata"]
+        context = context["context"]
+    
     print("here is the context................")
     print(context)
     res = rag_chain.invoke(
@@ -119,7 +124,7 @@ def question_answer(class_id, member_id, package_id, query, old_conversation, ca
             "context": context
         }
     )
-
+    print("\n here is the res.......................\n", res)
     formatted_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', res)
     formatted_text = formatted_text.replace('\n', '<br>')
     
@@ -142,4 +147,4 @@ def question_answer(class_id, member_id, package_id, query, old_conversation, ca
             res=formatted_text
         )
 
-    return formatted_text, get_chat_unique_id(id=id, time_stamp=time_stamp)
+    return formatted_text, get_chat_unique_id(id=id, time_stamp=time_stamp), metadata
