@@ -42,8 +42,8 @@ def parse_html(html_str):
     return text
 
 
-def create_document(text, title, article_id):
-    pages = [Document(page_content=text, metadata={"article_id":article_id, "title":title})]
+def create_document(text, title, article_id, url=""):
+    pages = [Document(page_content=text, metadata={"article_id":article_id, "title":title, "url":url})]
     chunk_size = 800
     chunk_overlap = 200
 
@@ -75,9 +75,9 @@ def create_embeddings(doc):
         return False
  
 
-def process(content, title, article_id):
+def process(content, title, article_id, url=""):
     text = parse_html(content)
-    doc = create_document(text, title, article_id)
+    doc = create_document(text, title, article_id, url)
     status = create_embeddings(doc)
     return status
 
@@ -87,7 +87,7 @@ def process_data(data):
             continue
         
         html_content = item["content"]
-        if not process(html_content, item["title"], item["id"]):
+        if not process(html_content, item["title"], item["id"], item["url"]):
             item["status"] = 0
             continue
         item["status"] = 1

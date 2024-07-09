@@ -9,7 +9,7 @@ class CaEmbeddingValidateSerializer(serializers.Serializer):
     title = serializers.CharField()
     content = serializers.CharField()
     published_date = serializers.CharField()
-    url = serializers.CharField(required=False)
+    url = serializers.CharField()
      
     # def validate_id(self, value):
     #     # to check if the id is numeric
