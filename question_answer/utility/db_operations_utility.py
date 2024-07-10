@@ -270,3 +270,33 @@ def get_new_chat_session_id(member_id):
     except psycopg2.Error as e:
         print("Error connecting to PostgresSQL:", e)
 
+
+def get_chat_text_from_id(chat_id ):
+    try:
+        conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
+        query = f"Select chat_text from ca_live_query_conversation where id = {chat_id} ORDER BY created_time desc LIMIT 1"
+        curr = conn.cursor()
+        curr.execute(query)
+        rows = curr.fetchall()
+        if len(rows) > 0:
+            return rows[0][0]
+        return ""
+    except psycopg2.Error as e:
+        print("Error connecting to PostgresSQL:", e)
+        return ""
+
+
+
+def get_formatted_chat_history(chat_id):
+    chat_str = get_chat_text_from_id(chat_id=chat_id)
+    chat_list = []
+    if chat_str:
+        chat_dict = json.loads(chat_str)
+        chat_time_list = chat_dict.keys()
+        sorted_chat_time = sorted(chat_time_list)
+        latest_chat_list = [chat_dict[chat_time] for chat_time in sorted_chat_time]
+        for chat_history in latest_chat_list:
+            chat_list.append(HumanMessage(content=chat_history['question']))
+            chat_list.append(AIMessage(content=chat_history['response']))
+
+    return chat_list

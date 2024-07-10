@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import LiveQuestionAnswer, LikeDislike, ChatHistory
+from .views import LiveQuestionAnswer, LikeDislike, ChatHistory, PredictQuestionsView
 
 router = DefaultRouter()
 
@@ -14,5 +14,8 @@ urlpatterns = [
     ),
     path(
         "chat-history", ChatHistory.as_view(), name="chat_history"
+    ),
+    path(
+        "predict-questions", PredictQuestionsView.as_view(), name="predict_questions"
     )
 ]

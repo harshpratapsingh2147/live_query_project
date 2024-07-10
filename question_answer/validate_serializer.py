@@ -102,3 +102,21 @@ class ChatHistorySerializer(serializers.Serializer):
         if not valid_integer(value):
             raise serializers.ValidationError("member_id can only be integer")
         return value
+
+
+class PredictQuestionsSerializer(serializers.Serializer):
+    chat_id = serializers.CharField(required=True)
+    article_id = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+
+    def validate_chat_id(self, value):
+        if not valid_integer(value):
+            raise serializers.ValidationError("chat_id can only be integer")
+        return value
+
+    def validate_article_id(self, value):
+        print("article_id:", value)
+        value = value.strip().split(",")
+        for val in value:
+            if not valid_integer(val):
+                raise serializers.ValidationError("article_id can only be integer")
+        return list(map(int, value))

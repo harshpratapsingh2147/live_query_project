@@ -1,8 +1,19 @@
 from rest_framework.generics import GenericAPIView
 #from .utility import question_answer
-from question_answer.utility.gpt_utility import question_answer
-from .validate_serializer import LiveQueryValidateSerializer, LikeDislikeSerializer, ChatHistorySerializer
-from question_answer.utility.db_operations_utility import update_like_dislike_status, get_chat_history_for_ask_expert
+from question_answer.utility.gpt_utility import (
+    question_answer, 
+    predict_questions
+)
+from .validate_serializer import (
+    LiveQueryValidateSerializer, 
+    LikeDislikeSerializer, 
+    ChatHistorySerializer, 
+    PredictQuestionsSerializer
+)
+from question_answer.utility.db_operations_utility import (
+    update_like_dislike_status, 
+    get_chat_history_for_ask_expert
+)
 from rest_framework.response import Response
 from core.utility import CommonService
 # Create your views here.
@@ -96,6 +107,31 @@ class ChatHistory(GenericAPIView):
 
         return Response(chat_list)
 
+
+
+class PredictQuestionsView(GenericAPIView):
+    validate_serializer_class = PredictQuestionsSerializer
+
+    def get(self, request):
+        filter_serializer = self.validate_serializer_class(data=request.GET)
+
+        if not filter_serializer.is_valid():
+            err_msg = filter_serializer.errors
+            data = CommonService.default_response(
+                {"details":err_msg}, True, "Invalid Request Params")
+            return Response(data, status=400)
+        
+        class_id = filter_serializer.validated_data.get('chat_id')
+        article_id = filter_serializer.validated_data.get('article_id')
+
+        predicted_questions = predict_questions(
+            chat_id=class_id,
+            article_id=article_id,
+        )
+       
+        print("\npredicted output question:--------------------",predicted_questions)
+
+        return Response({"output":predicted_questions})
 
 
 

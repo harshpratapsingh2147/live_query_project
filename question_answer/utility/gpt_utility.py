@@ -3,16 +3,21 @@ import re
 from langchain_community.vectorstores import Chroma
 from langchain_community.chat_models import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
+from langchain_core.output_parsers.list import NumberedListOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.prompts import MessagesPlaceholder
 import chromadb
 from decouple import config
+from langchain.llms import OpenAI
+import openai
+
 
 from question_answer.customEmbeddingsClass import CustomOpenAIEmbeddings
 from .db_operations_utility import (
     get_processed_chat_history, 
     update_create_chat_history,
-    update_create_ca_chat_history
+    update_create_ca_chat_history,
+    get_formatted_chat_history,
 )
 from .reranking_utility import rerank
 from .enum_utility import Prompt
@@ -32,8 +37,11 @@ def get_top_k_docs(query, class_id, ca_query=False):
     embedding = CustomOpenAIEmbeddings(openai_api_key=api_key)
     
     if ca_query:
-        filter_data = {"article_id":class_id} if class_id else {}
         collection_name = ca_collection_name
+        if class_id:
+            filter_data = {"article_id":{"$in":class_id}} if isinstance(class_id, list) else {"article_id":class_id}
+        else :
+            filter_data = {}
     else:
         # filter_data = {"source": f"{BASE_TRANSCRIPT_PATH}{class_id}_transcript.txt"}
         filter_data = {"source": f"{BASE_TRANSCRIPT_PATH}{class_id}/{class_id}_gemini_transcript_improved.txt"}
@@ -148,3 +156,49 @@ def question_answer(class_id, member_id, package_id, query, old_conversation, ca
         )
 
     return formatted_text, get_chat_unique_id(id=id, time_stamp=time_stamp), metadata
+
+
+def get_last_query_from_chat_histroy(chat_history):
+    last_query = ""
+    if chat_history:
+        last_query = chat_history[-2] or ""
+        if last_query:
+            last_query = last_query.content
+    return last_query
+    
+
+def predict_questions(chat_id, article_id):
+    llm = ChatOpenAI(model_name="gpt-4o", temperature=0.2, openai_api_key=api_key)
+
+    predict_question_prompt = Prompt.predict_next_question_prompt.value
+
+    qa_prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", predict_question_prompt),
+            MessagesPlaceholder(variable_name="chat_history"),
+        ]
+    )
+
+    rag_chain = (
+            qa_prompt | llm | NumberedListOutputParser()
+    )
+    chat_history = get_formatted_chat_history(chat_id=chat_id)
+    print("chat history:-----------------",chat_history)
+    
+    last_query = get_last_query_from_chat_histroy(chat_history)
+    context = get_top_k_docs(query=last_query, class_id=article_id, ca_query=True)
+    context = context["context"]
+    # print("the context is -----------------",context)
+    
+    res = rag_chain.invoke(
+        {
+            "question": last_query,
+            "chat_history": chat_history,
+            "context": context
+        }
+    )
+    print("\n here is the res.......................\n", res)
+    
+    return res
+
+    
