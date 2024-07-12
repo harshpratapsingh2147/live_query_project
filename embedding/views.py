@@ -34,7 +34,6 @@ class CAEmbeddingsView(GenericAPIView):
     
     def post(self, request):
         # validate input data
-        # import pdb;pdb.set_trace()
         filter_serializer = self.validate_serializer_class(data=request.data, many=True)
         if not filter_serializer.is_valid():
             err_msg = filter_serializer.errors
