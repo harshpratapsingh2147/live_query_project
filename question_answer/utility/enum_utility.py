@@ -12,18 +12,17 @@ class Prompt(Enum):
     
     <instruction>
     Follow these instructions: 
-        1. If the answer to query can not be answered using only the context provided, Reply 
-        “Dear Student, 
-        The Query asked by you is beyond the scope of this lecture. 
-        Please ask me another question from the content taught in the class. 
-        Thank you.”
-        2. Do not try to make up an answer.
-        3. Identify the most relevant points from the context to answer the question.
-        4. Generate a detailed, useful and relevant answer from the identified points.
-        5. Answer must be factually accurate.
-        6. Structure the answer in the format below: 
+        1. Identify the most relevant points from the provided context only to answer the question.
+        2. Generate a useful and relevant answer from the identified points.
+        3. Answer must be factually accurate.
+        4. Structure the answer in the format below: 
         Dear Student, 
         A plain text answer. 
+        Thank you.
+        5. If the answer to query can not be answered using only the context provided, Reply 
+        "Dear Student, 
+        The Query asked by you is beyond the scope of this lecture. 
+        Please ask me another question from the content taught in the class. 
         Thank you. 
     </instruction>
     

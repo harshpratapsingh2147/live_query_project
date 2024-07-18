@@ -1,5 +1,4 @@
 import re
-import time
 from langchain.vectorstores import Chroma
 from langchain_community.chat_models import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
@@ -10,7 +9,7 @@ from decouple import config
 
 from question_answer.customEmbeddingsClass import CustomOpenAIEmbeddings
 from .db_operations_utility import get_processed_chat_history, update_create_chat_history
-from .reranking_utility import rerank
+from .reranking_utility import format_docs
 from .enum_utility import Prompt
 
 chroma_ip = config('CHROMA_IP')
@@ -20,7 +19,7 @@ BASE_TRANSCRIPT_PATH = config('BASE_TRANSCRIPT_PATH')
 
 
 def get_top_k_docs(query, class_id):
-    top_k = 6
+    top_k = 10
     client = chromadb.HttpClient(host=chroma_ip, port=8000)
 
     # Get the stored vector db
@@ -31,13 +30,13 @@ def get_top_k_docs(query, class_id):
         collection_name="live_query"
     )
 
-    relevant_docs = vectordb.max_marginal_relevance_search(
+    relevant_docs = vectordb.similarity_search(
         query,
-        k=8,
+        k=top_k,
         filter={"source": f"{BASE_TRANSCRIPT_PATH}{class_id}/{class_id}_gemini_transcript_improved.txt"}
     )
-
-    return rerank(query=query, relevant_docs=relevant_docs, top_k=top_k)
+    relevant_docs = [doc.page_content for doc in relevant_docs]
+    return format_docs(relevant_docs)
 
 
 def get_contextualized_qa_chain():
@@ -91,8 +90,6 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
 
     chat_history = get_processed_chat_history(class_id=class_id, member_id=member_id)
     context_query = get_contextualized_question(chat_history, query)
-    # print("Here is the context query..............")
-    # print(context_query)
     context = get_top_k_docs(query=context_query, class_id=class_id)
     # print("here is the context................")
     # print(context)
