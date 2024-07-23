@@ -91,8 +91,8 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
     chat_history = get_processed_chat_history(class_id=class_id, member_id=member_id)
     context_query = get_contextualized_question(chat_history, query)
     context = get_top_k_docs(query=context_query, class_id=class_id)
-    # print("here is the context................")
-    # print(context)
+    print("here is the context................")
+    print(context)
     res = rag_chain.invoke(
         {
             "question": query,
