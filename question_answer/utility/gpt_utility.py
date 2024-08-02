@@ -35,6 +35,8 @@ def get_top_k_docs(query, class_id):
         k=top_k,
         filter={"source": f"{BASE_TRANSCRIPT_PATH}{class_id}/{class_id}_gemini_transcript_improved.txt"}
     )
+    print("Here are the relevant docs...............")
+    print(relevant_docs)
     relevant_docs = [doc.page_content for doc in relevant_docs]
     return format_docs(relevant_docs)
 
