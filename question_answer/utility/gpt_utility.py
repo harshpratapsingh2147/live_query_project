@@ -18,7 +18,16 @@ api_key = config('OPEN_AI_API_KEY')
 BASE_TRANSCRIPT_PATH = config('BASE_TRANSCRIPT_PATH')
 
 
-def get_top_k_docs(query, class_id):
+def filter_docs(docs, class_id):
+    other_lecture = []
+    for doc in docs:
+        if doc.metadata['lecture_id'] != class_id:
+            other_lecture.append(doc)
+
+    return other_lecture
+
+
+def get_top_k_docs(query, class_id, section):
     top_k = 10
     client = chromadb.HttpClient(host=chroma_ip, port=8000)
 
@@ -30,15 +39,23 @@ def get_top_k_docs(query, class_id):
         collection_name="live_query"
     )
 
-    relevant_docs = vectordb.similarity_search(
+    current_lecture = vectordb.similarity_search(
         query,
         k=top_k,
         filter={"source": f"{BASE_TRANSCRIPT_PATH}{class_id}/{class_id}_gemini_transcript_improved.txt"}
     )
-    print("Here are the relevant docs...............")
-    print(relevant_docs)
-    relevant_docs = [doc.page_content for doc in relevant_docs]
-    return format_docs(relevant_docs)
+
+    other_lecture = vectordb.similarity_search(
+        query,
+        k=top_k,
+        filter={"section": section}
+    )
+    other_lecture = filter_docs(other_lecture, class_id)
+
+    current_lecture = format_docs(current_lecture)
+    other_lecture = format_docs(other_lecture)
+
+    return current_lecture, other_lecture
 
 
 def get_contextualized_qa_chain():
@@ -73,7 +90,7 @@ def get_chat_unique_id(id, time_stamp):
     return str(id) + "_" + str(time_stamp)
 
 
-def question_answer(class_id, member_id, package_id, query, old_conversation):
+def question_answer(class_id, member_id, package_id, query, old_conversation, section):
     llm = ChatOpenAI(model_name="gpt-4o", temperature=0.2, openai_api_key=api_key)
 
     qa_system_prompt = Prompt.qa_system_prompt.value
@@ -92,14 +109,15 @@ def question_answer(class_id, member_id, package_id, query, old_conversation):
 
     chat_history = get_processed_chat_history(class_id=class_id, member_id=member_id)
     context_query = get_contextualized_question(chat_history, query)
-    context = get_top_k_docs(query=context_query, class_id=class_id)
+    current_lecture, other_lecture = get_top_k_docs(query=context_query, class_id=class_id, section=section)
     # print("here is the context................")
     # print(context)
     res = rag_chain.invoke(
         {
             "question": query,
             "chat_history": chat_history,
-            "context": context
+            "current_lecture": current_lecture,
+            "other_lectures": other_lecture
         }
     )
 

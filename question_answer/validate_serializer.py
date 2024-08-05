@@ -20,6 +20,7 @@ class LiveQueryValidateSerializer(serializers.Serializer):
     member_id = serializers.CharField(required=True)
     old_conversation = serializers.CharField(required=True)
     package_id = serializers.CharField(required=True)
+    section = serializers.CharField(required=True)
 
     def validate_class_id(self, value):
         if not valid_integer(value):

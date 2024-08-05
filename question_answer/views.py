@@ -17,6 +17,7 @@ class LiveQuestionAnswer(GenericAPIView):
         member_id = request.GET.get('member_id')
         old_conversation = request.GET.get('old_conversation')
         package_id = request.GET.get('package_id')
+        section = request.GET.get('section')
 
         if not filter_serializer.is_valid():
             return Response(filter_serializer.errors)
@@ -26,7 +27,8 @@ class LiveQuestionAnswer(GenericAPIView):
             member_id=member_id,
             query=query,
             old_conversation=old_conversation,
-            package_id=package_id
+            package_id=package_id,
+            section=section
         )
 
         response = {
