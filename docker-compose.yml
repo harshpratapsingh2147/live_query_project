@@ -20,18 +20,18 @@ services:
     volumes:
       - chroma_data_gemini:/chroma
 
-  chat-db:
-      container_name: 'chat-db'
-      image: postgres
-      ports:
-      - "5432:5432"
-      environment:
-        - POSTGRES_DB=chat
-        - POSTGRES_USER=chat
-        - POSTGRES_PASSWORD=chat
-      volumes:
-        - chat_data:/var/lib/postgresql/data
+#  chat-db:
+#      container_name: 'chat-db'
+#      image: postgres
+#      ports:
+#      - "5432:5432"
+#      environment:
+#        - POSTGRES_DB=chat
+#        - POSTGRES_USER=chat
+#        - POSTGRES_PASSWORD=chat
+#      volumes:
+#        - chat_data:/var/lib/postgresql/data
 
 volumes:
   chroma_data_gemini:
-  chat_data:
+#  chat_data:

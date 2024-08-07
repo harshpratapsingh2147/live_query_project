@@ -1,6 +1,7 @@
 import datetime
 
-import psycopg2
+# import psycopg2
+import pymysql
 from decouple import config
 import json
 
@@ -15,7 +16,8 @@ PASS = config('DB_PASS')
 
 def get_chat_from_db(class_id, member_id):
     try:
-        conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
+        # conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
+        conn = pymysql.connect(host=HOST, user=USER, passwd=PASS, db=NAME, connect_timeout=5)
         q = f"Select chat_text from live_query_conversation where member_id = {member_id} and video_id = {class_id} ORDER BY created_time desc LIMIT 1"
         curr = conn.cursor()
         curr.execute(q)
@@ -23,8 +25,9 @@ def get_chat_from_db(class_id, member_id):
         if len(rows) > 0:
             return rows[0][0]
         return None
-    except psycopg2.Error as e:
-        print("Error connecting to PostgresSQL:", e)
+    # except psycopg2.Error as e:
+    except pymysql.MySQLError as err:
+        print("Error connecting to PostgresSQL:", err)
 
 
 def get_latest_chat_history(class_id, member_id):
@@ -73,7 +76,8 @@ def update_create_chat_history(query, old_conversation, class_id, member_id, pac
     VALUES (%s, %s, %s, %s, %s);
         """
         try:
-            conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
+            conn = pymysql.connect(host=HOST, user=USER, passwd=PASS, db=NAME, connect_timeout=5)
+            # conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
             curr = conn.cursor()
             curr.execute(q, (member_id, chat, package_id, class_id, time_stamp))
             conn.commit()
@@ -86,8 +90,9 @@ def update_create_chat_history(query, old_conversation, class_id, member_id, pac
             conn.close()
             id = row[0][0]
             return id, time_stamp
-        except psycopg2.Error as e:
-            print("Error connecting to PostgresSQL:", e)
+        # except psycopg2.Error as e:
+        except pymysql.MySQLError as err:
+            print("Error connecting to PostgresSQL:", err)
 
     else:
         already_exist_q = f"""
@@ -96,7 +101,8 @@ def update_create_chat_history(query, old_conversation, class_id, member_id, pac
         """
 
         try:
-            conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
+            # conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
+            conn = pymysql.connect(host=HOST, user=USER, passwd=PASS, db=NAME, connect_timeout=5)
             curr = conn.cursor()
             curr.execute(already_exist_q)
             rows = curr.fetchall()
@@ -121,14 +127,16 @@ def update_create_chat_history(query, old_conversation, class_id, member_id, pac
                 conn.commit()
                 conn.close()
                 return id, time_stamp
-        except psycopg2.Error as e:
-            print("Error connecting to PostgresSQL:", e)
+        # except psycopg2.Error as e:
+        except pymysql.MySQLError as err:
+            print("Error connecting to PostgresSQL:", err)
 
 
 def update_like_dislike_status(action, id, time_stamp):
 
     try:
-        conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
+        # conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
+        conn = pymysql.connect(host=HOST, user=USER, passwd=PASS, db=NAME, connect_timeout=5)
         curr = conn.cursor()
 
         q = f"""
@@ -150,8 +158,9 @@ def update_like_dislike_status(action, id, time_stamp):
         conn.commit()
         conn.close()
         return True
-    except psycopg2.Error as e:
-        print("Error connecting to PostgresSQL:", e)
+    # except psycopg2.Error as e:
+    except pymysql.MySQLError as err:
+        print("Error connecting to PostgresSQL:", err)
         return False
 
 
