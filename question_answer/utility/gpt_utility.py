@@ -54,8 +54,10 @@ def get_top_k_docs(query, class_id, section):
 
     current_lecture = format_docs(current_lecture)
     other_lecture = format_docs(other_lecture)
+    relevant_docs = "/n/n".join([current_lecture, other_lecture])
 
-    return current_lecture, other_lecture
+    # return current_lecture, other_lecture
+    return relevant_docs
 
 
 def get_contextualized_qa_chain():
@@ -109,15 +111,18 @@ def question_answer(class_id, member_id, package_id, query, old_conversation, se
 
     chat_history = get_processed_chat_history(class_id=class_id, member_id=member_id)
     context_query = get_contextualized_question(chat_history, query)
-    current_lecture, other_lecture = get_top_k_docs(query=context_query, class_id=class_id, section=section)
-    # print("here is the context................")
+    # current_lecture, other_lecture = get_top_k_docs(query=context_query, class_id=class_id, section=section)
+    context = get_top_k_docs(query=context_query, class_id=class_id, section=section)
     # print(context)
+    # print("here is the current context................")
+    # print(current_lecture)
+    # print("here is the other context................")
+    # print(other_lecture)
     res = rag_chain.invoke(
         {
             "question": query,
             "chat_history": chat_history,
-            "current_lecture": current_lecture,
-            "other_lectures": other_lecture
+            "context": context
         }
     )
 
