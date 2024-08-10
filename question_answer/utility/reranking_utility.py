@@ -6,7 +6,7 @@ def format_docs(docs):
     if len(docs) > 0:
         return "\n\n".join(doc.page_content for doc in docs)
     else:
-        return []
+        return ""
 
 
 # Function to compute MaxSim
@@ -42,17 +42,18 @@ def rerank(query, relevant_docs, top_k=6):
     # Get score for each document
     for document in relevant_docs:
         # print(document)
-        document_encoding = tokenizer(document.page_content, return_tensors='pt', truncation=True, max_length=512)
+        document_encoding = tokenizer(document, return_tensors='pt', truncation=True, max_length=512)
         document_embedding = model(**document_encoding).last_hidden_state
 
         # Calculate MaxSim score
         score = maxsim(query_embedding.unsqueeze(0), document_embedding)
         scores.append({
             "score": score.item(),
-            "document": document.page_content,
+            "document": document,
         })
 
     # Sort the scores by highest to lowest and print
     sorted_data = sorted(scores, key=lambda x: x['score'], reverse=True)[:top_k]
-    return format_docs([data['document'] for data in sorted_data])
+    # return format_docs([data['document'] for data in sorted_data])
+    return sorted_data
 
