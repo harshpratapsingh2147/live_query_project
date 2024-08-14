@@ -28,7 +28,7 @@ def filter_docs(docs, class_id):
 
 
 def get_top_k_docs(query, class_id, section):
-    top_k = 10
+    top_k = 5
     client = chromadb.HttpClient(host=chroma_ip, port=8000)
 
     # Get the stored vector db
@@ -41,15 +41,20 @@ def get_top_k_docs(query, class_id, section):
 
     current_lecture = vectordb.similarity_search(
         query,
-        k=top_k,
+        k=6,
         filter={"source": f"{BASE_TRANSCRIPT_PATH}{class_id}/{class_id}_gemini_transcript_improved.txt"}
     )
 
     other_lecture = vectordb.similarity_search(
         query,
-        k=top_k,
+        k=4,
         filter={"section": section}
     )
+
+    print("current lecture docs...........")
+    print(current_lecture)
+    print("other lecture docs.............")
+    print(other_lecture)
     other_lecture = filter_docs(other_lecture, class_id)
 
     current_lecture = format_docs(current_lecture)

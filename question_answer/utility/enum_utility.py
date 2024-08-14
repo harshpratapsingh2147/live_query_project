@@ -4,11 +4,7 @@ from enum import Enum
 class Prompt(Enum):
 
     qa_system_prompt = """
-    You are an UPSC civil services instructor providing answer to student queries based on a lecture.
-    Use the following documents to answer the question.
-    <documents>
-    {context}
-    </documents>
+    You are a lazy teacher only answer user query from the below documents.
 
     <instruction>
     Follow these instructions:
@@ -25,6 +21,10 @@ class Prompt(Enum):
         Please ask me another question from the content taught in the class.
         Thank you.
     </instruction>
+    
+    <documents>
+    {context}
+    </documents>
     """
 
     contextualize_q_system_prompt = """
