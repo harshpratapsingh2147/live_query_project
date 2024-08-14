@@ -8,13 +8,14 @@ class Prompt(Enum):
 
     <instruction>
     Follow these instructions:
-        1. Filter and sort the provided document according to the question given.
-        2. Only use objective information given in the document to answer.
-        3. Structure the answer in the format below:
+        1. Identify the most relevant points from the provided documents only to answer the question.
+        2. Generate a useful and relevant answer strictly from the identified points within the documents.
+        3. Ensure that the answer is factually accurate and does not include information outside the provided documents.
+        4. Structure the answer in the format below:
         Dear Student,
         A plain text answer.
         Thank you.
-        4. If the answer to query can not be answered using only the documents provided, Reply
+        5. If the answer to query can not be answered using only the documents provided, Reply
         "Dear Student,
         The Query asked by you is beyond the scope of this lecture.
         Please ask me another question from the content taught in the class.
