@@ -1,9 +1,21 @@
 from rest_framework.generics import GenericAPIView
 #from .utility import question_answer
-from question_answer.utility.gpt_utility import question_answer
-from .validate_serializer import LiveQueryValidateSerializer, LikeDislikeSerializer, ChatHistorySerializer
-from question_answer.utility.db_operations_utility import update_like_dislike_status, get_chat_history_for_ask_expert
+from question_answer.utility.gpt_utility import (
+    question_answer, 
+    predict_questions
+)
+from .validate_serializer import (
+    LiveQueryValidateSerializer, 
+    LikeDislikeSerializer, 
+    ChatHistorySerializer, 
+    PredictQuestionsSerializer
+)
+from question_answer.utility.db_operations_utility import (
+    update_like_dislike_status, 
+    get_chat_history_for_ask_expert
+)
 from rest_framework.response import Response
+from core.utility import CommonService
 # Create your views here.
 
 
@@ -11,7 +23,7 @@ class LiveQuestionAnswer(GenericAPIView):
     validate_serializer_class = LiveQueryValidateSerializer
 
     def get(self, request):
-        filter_serializer = self.validate_serializer_class(data=request.GET)
+        filter_serializer = self.validate_serializer_class(data=request.query_params.dict())
         class_id = request.GET.get('class_id')
         query = request.GET.get('query')
         member_id = request.GET.get('member_id')
@@ -19,22 +31,38 @@ class LiveQuestionAnswer(GenericAPIView):
         package_id = request.GET.get('package_id')
         section = request.GET.get('section')
 
+        article_id = request.GET.get('article_id')
+        ca_query = eval(request.GET.get('ca_query',"False").title())
+        
         if not filter_serializer.is_valid():
-            return Response(filter_serializer.errors)
+            err_msg = filter_serializer.errors
+            data = CommonService.default_response(
+                {"details":err_msg}, True, "Invalid Request Params")
+            return Response(data, status=400)
+                
+        if ca_query:
+            class_id=int(article_id) if article_id else None
+        chat_session_id = filter_serializer.validated_data.get('chat_session_id')
 
-        res, unique_id = question_answer(
+
+        res, unique_id, metadata= question_answer(
             class_id=class_id,
             member_id=member_id,
             query=query,
             old_conversation=old_conversation,
             package_id=package_id,
-            section=section
+            section=section,
+            ca_query=ca_query,
+            chat_session_id = chat_session_id
         )
 
         response = {
             query: res,
             "unique_id": unique_id,
         }
+        if ca_query:
+            response["suggested_links"] = metadata
+        response.update({"chat_session_id":chat_session_id} if chat_session_id else {})
 
         return Response(response)
 
@@ -82,6 +110,31 @@ class ChatHistory(GenericAPIView):
 
         return Response(chat_list)
 
+
+
+class PredictQuestionsView(GenericAPIView):
+    validate_serializer_class = PredictQuestionsSerializer
+
+    def get(self, request):
+        filter_serializer = self.validate_serializer_class(data=request.GET)
+
+        if not filter_serializer.is_valid():
+            err_msg = filter_serializer.errors
+            data = CommonService.default_response(
+                {"details":err_msg}, True, "Invalid Request Params")
+            return Response(data, status=400)
+        
+        chat_id = filter_serializer.validated_data.get('chat_id')
+        article_id = filter_serializer.validated_data.get('article_id')
+
+        predicted_questions = predict_questions(
+            chat_id=chat_id,
+            article_id=article_id,
+        )
+       
+        print("\npredicted output question:--------------------",predicted_questions)
+
+        return Response({"output":predicted_questions})
 
 
 

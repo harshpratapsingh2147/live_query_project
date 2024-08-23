@@ -47,4 +47,29 @@ class Prompt(Enum):
     
     """
 
-
+    predict_next_question_prompt = """
+    You are an UPSC civil services instructor.You are provided a question.
+    Your task is to predicts next 3-5 questions based on the provided question. 
+    to student queries based on the articles. 
+    Use the following documents to predict the questions.
+    <context>
+    {context}
+    </context>
+    
+    <instruction>
+    Follow these instructions: 
+    1. Formulate 3 standalone questions based on the chat histroy provided.
+    2. minimum no of question generated should be 2 and maximum is 5.
+    3. You MUST NOT answer the question or statement. Just reformulated if needed or return as it is.
+    4. DO not add "Dear student" OR "thank you".
+    5. structure of output-
+    [   
+        1. question text1,
+        2. question text 2,
+        3. question text 3,
+        ...
+    ]
+    
+    </instruction>
+    
+    """

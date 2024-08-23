@@ -19,5 +19,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('qa/', include('question_answer.urls'))
+    path('qa/', include('question_answer.urls')),
+    path('embed/', include('embedding.urls')),
+
 ]

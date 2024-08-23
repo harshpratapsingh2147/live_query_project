@@ -1,6 +1,6 @@
 from decouple import config
 import chromadb
-from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 
 from .customEmbeddingsClass import CustomOpenAIEmbeddings
 from .get_chat_history import get_processed_chat_history

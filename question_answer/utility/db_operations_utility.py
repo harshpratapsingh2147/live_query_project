@@ -14,11 +14,19 @@ USER = config('DB_USER')
 PASS = config('DB_PASS')
 
 
-def get_chat_from_db(class_id, member_id):
+def get_chat_from_db(class_id, member_id, ca_query=False, chat_session_id=None):
     try:
         # conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
         conn = pymysql.connect(host=HOST, user=USER, passwd=PASS, db=NAME, connect_timeout=5)
-        q = f"Select chat_text from live_query_conversation where member_id = {member_id} and video_id = {class_id} ORDER BY created_time desc LIMIT 1"
+        if not ca_query:
+            q = f"Select chat_text from live_query_conversation where member_id = {member_id} and video_id = {class_id} ORDER BY created_time desc LIMIT 1"
+        else:
+            if not class_id:
+                id_field = "chat_session_id"
+                class_id=chat_session_id
+            else:
+                id_field ="article_id"
+            q = f"Select chat_text from ca_live_query_conversation where member_id = {member_id} and {id_field} = {class_id} ORDER BY created_time desc LIMIT 1"
         curr = conn.cursor()
         curr.execute(q)
         rows = curr.fetchall()
@@ -30,8 +38,8 @@ def get_chat_from_db(class_id, member_id):
         print("Error connecting to PostgresSQL:", err)
 
 
-def get_latest_chat_history(class_id, member_id):
-    chat_str = get_chat_from_db(class_id=class_id, member_id=member_id)
+def get_latest_chat_history(class_id, member_id, ca_query=False, chat_session_id=None):
+    chat_str = get_chat_from_db(class_id=class_id, member_id=member_id, ca_query=ca_query, chat_session_id=chat_session_id)
 
     if chat_str:
         chat_dict = json.loads(chat_str)
@@ -50,8 +58,10 @@ def get_chat_history_for_ask_expert(class_id, member_id):
     return chat_list
 
 
-def get_processed_chat_history(class_id, member_id):
-    chat_history_list = get_latest_chat_history(class_id=class_id, member_id=member_id)
+def get_processed_chat_history(class_id, member_id, ca_query=False, chat_session_id=None):
+    chat_history_list = get_latest_chat_history(
+        class_id=class_id, member_id=member_id, ca_query=ca_query, chat_session_id=chat_session_id
+    )
     chat_list = []
     for chat_history in chat_history_list:
         chat_list.append(HumanMessage(content=chat_history['question']))
@@ -132,6 +142,99 @@ def update_create_chat_history(query, old_conversation, class_id, member_id, pac
             print("Error connecting to PostgresSQL:", err)
 
 
+
+def create_ca_record(query, article_id, member_id, res, chat_session_id):
+    time_stamp = datetime.datetime.now()
+    chat = json.dumps({
+        str(time_stamp): {
+            "question": query,
+            "response": res,
+            "time": str(time_stamp),
+            "like": None
+        }
+    })
+    id_field = "chat_session_id" if not article_id else "article_id"
+    if not article_id:
+        q = """
+        INSERT INTO ca_live_query_conversation (member_id, chat_text, chat_session_id, created_time)
+        VALUES (%s, %s, %s, %s);
+        """
+        article_id = chat_session_id
+    else:
+        q = """
+        INSERT INTO ca_live_query_conversation (member_id, chat_text, article_id, created_time)
+        VALUES (%s, %s, %s, %s);
+        """
+    try:
+        print(("value check",member_id, chat, article_id, time_stamp))
+        # conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
+        conn = pymysql.connect(host=HOST, user=USER, passwd=PASS, db=NAME, connect_timeout=5)
+        curr = conn.cursor()
+        curr.execute(q, (member_id, chat, article_id, time_stamp))
+        conn.commit()
+        get_query = f"""
+        Select id from ca_live_query_conversation where member_id={member_id} and {id_field}={article_id} ORDER BY 
+        created_time desc LIMIT 1 """
+
+        curr.execute(get_query)
+        row = curr.fetchall()
+        conn.close()
+        print("query id:", row)
+        if row and row[0]:
+            id = row[0][0]
+                    
+            return id, time_stamp
+        return "", ""
+    except pymysql.MySQLError as e:
+        print("Error connecting to PostgresSQL:", e)
+
+
+def update_create_ca_chat_history(query, old_conversation, article_id, member_id, res, chat_session_id):
+
+    if old_conversation == 'false':
+        return create_ca_record(query, article_id, member_id, res, chat_session_id)
+
+    else:
+        id_field = "chat_session_id" if not article_id else "article_id"
+        search_id = article_id if article_id else chat_session_id
+        already_exist_q = f"""
+                        SELECT id, chat_text FROM ca_live_query_conversation 
+                        WHERE member_id = {member_id} and {id_field} = {search_id} ORDER BY created_time desc limit 1
+        """
+
+        try:
+            # conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
+            conn = pymysql.connect(host=HOST, user=USER, passwd=PASS, db=NAME, connect_timeout=5)
+            curr = conn.cursor()
+            curr.execute(already_exist_q)
+            rows = curr.fetchall()
+            if not rows or (not rows[0]):
+                return create_ca_record(query, article_id, member_id, res, chat_session_id)
+            id = rows[0][0]
+            chat_text = rows[0][1]
+            time_stamp = datetime.datetime.now()
+            if len(rows) > 0:
+                chat_dict = json.loads(chat_text)
+                chat_dict[str(time_stamp)] = {
+                        "question": query,
+                        "response": res,
+                        "time": str(time_stamp),
+                        "like": None
+                }
+                chat = json.dumps(chat_dict)
+                update_q = f"""
+                UPDATE ca_live_query_conversation set chat_text=%s,modified_time=%s where 
+                id = %s
+                """
+
+                curr.execute(update_q, (chat, time_stamp, id))
+                conn.commit()
+                conn.close()
+                return id, time_stamp
+        except pymysql.MySQLError as err:
+            print("Error connecting to PostgresSQL:", e)
+
+
 def update_like_dislike_status(action, id, time_stamp):
 
     try:
@@ -164,4 +267,51 @@ def update_like_dislike_status(action, id, time_stamp):
         return False
 
 
+def get_new_chat_session_id(member_id):
+    try:
+        # conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
+        conn = pymysql.connect(host=HOST, user=USER, passwd=PASS, db=NAME, connect_timeout=5)
+        q = f"Select chat_session_id from ca_live_query_conversation where member_id = {member_id} and article_id is null ORDER BY created_time desc LIMIT 1"
+        curr = conn.cursor()
+        curr.execute(q)
+        rows = curr.fetchall()
+        ans = 0
+        if len(rows) > 0:
+            ans = rows[0][0]
+        return ans+1
+    # except psycopg2.Error as e:
+    except pymysql.MySQLError as err:
+        print("Error connecting to PostgresSQL:", err)
 
+
+def get_chat_text_from_id(chat_id ):
+    try:
+        # conn = psycopg2.connect(host=HOST, user=USER, password=PASS, dbname=NAME, connect_timeout=5)
+        conn = pymysql.connect(host=HOST, user=USER, passwd=PASS, db=NAME, connect_timeout=5)
+        query = f"Select chat_text from ca_live_query_conversation where id = {chat_id} ORDER BY created_time desc LIMIT 1"
+        curr = conn.cursor()
+        curr.execute(query)
+        rows = curr.fetchall()
+        if len(rows) > 0:
+            return rows[0][0]
+        return ""
+    # except psycopg2.Error as e:
+    except pymysql.MySQLError as err:
+        print("Error connecting to PostgresSQL:", err)
+        return ""
+
+
+
+def get_formatted_chat_history(chat_id):
+    chat_str = get_chat_text_from_id(chat_id=chat_id)
+    chat_list = []
+    if chat_str:
+        chat_dict = json.loads(chat_str)
+        chat_time_list = chat_dict.keys()
+        sorted_chat_time = sorted(chat_time_list)
+        latest_chat_list = [chat_dict[chat_time] for chat_time in sorted_chat_time]
+        for chat_history in latest_chat_list:
+            chat_list.append(HumanMessage(content=chat_history['question']))
+            chat_list.append(AIMessage(content=chat_history['response']))
+
+    return chat_list

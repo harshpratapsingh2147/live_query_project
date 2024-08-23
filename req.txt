@@ -18,3 +18,5 @@ tiktoken
 gunicorn
 psycopg2
 gevent
+boto3
+beautifulsoup4
