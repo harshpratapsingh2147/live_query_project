@@ -106,7 +106,7 @@ class ChatHistory(GenericAPIView):
             member_id=member_id
         )
 
-        print(chat_list)
+        # print(chat_list)
 
         return Response(chat_list)
 

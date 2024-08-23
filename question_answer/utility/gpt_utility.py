@@ -154,7 +154,7 @@ def question_answer(class_id, member_id, package_id, query, old_conversation, se
     chat_history = get_processed_chat_history(
         class_id=class_id, member_id=member_id, ca_query=ca_query, chat_session_id=chat_session_id
     )
-    print(chat_history)
+    # print(chat_history)
     context_query = get_contextualized_question(chat_history, query)
     context = get_top_k_docs(query=context_query, class_id=class_id, section=section, ca_query=ca_query)
     
@@ -170,7 +170,7 @@ def question_answer(class_id, member_id, package_id, query, old_conversation, se
             "context": context
         }
     )
-    print("\n here is the res.......................\n", res)
+    # print("\n here is the res.......................\n", res)
     formatted_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', res)
     formatted_text = formatted_text.replace('\n', '<br>')
     
@@ -221,7 +221,7 @@ def predict_questions(chat_id, article_id):
             qa_prompt | llm | NumberedListOutputParser()
     )
     chat_history = get_formatted_chat_history(chat_id=chat_id)
-    print("chat history:-----------------",chat_history)
+    # print("chat history:-----------------",chat_history)
     
     last_query = get_last_query_from_chat_histroy(chat_history)
     context = get_top_k_docs(query=last_query, class_id=article_id, ca_query=True)
@@ -235,7 +235,7 @@ def predict_questions(chat_id, article_id):
             "context": context
         }
     )
-    print("\n here is the res.......................\n", res)
+    # print("\n here is the res.......................\n", res)
     
     return res
 
