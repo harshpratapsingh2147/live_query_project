@@ -1,4 +1,5 @@
 from rest_framework.generics import GenericAPIView
+from rest_framework.views import APIView
 #from .utility import question_answer
 from question_answer.utility.gpt_utility import (
     question_answer, 
@@ -89,7 +90,7 @@ class LikeDislike(GenericAPIView):
             return Response("could not update status")
 
 
-class ChatHistory(GenericAPIView):
+class ChatHistory(APIView):
     validate_serializer_class = ChatHistorySerializer
 
     def get(self, request):
