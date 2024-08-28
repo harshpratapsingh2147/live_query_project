@@ -30,8 +30,8 @@ S3_BUCKET = config('S3_BUCKET')
 S3_EMBEDDING_FOLDER = config('S3_EMBEDDING_FOLDER')
 
 
-DATE = datetime.now().strftime("%Y_%m_%d__%H_%M")
-FILE_NAME = "article_embed_start_{DATE}.json"
+DATE = datetime.now().strftime("%Y_%m_%d__%H_%M_%S")
+FILE_NAME = f"article_embed_start_{DATE}.json"
 LOCAL_FILE_PATH = f"{BASE_EMBEDDING_PATH}/{FILE_NAME}"
 
 
