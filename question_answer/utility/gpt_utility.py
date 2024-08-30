@@ -49,6 +49,7 @@ def get_top_k_docs(query, class_id, section=None, ca_query=False):
     if ca_query:
         collection_name = ca_collection_name
         if class_id:
+            class_id = class_id.split(",")
             filter_data = {"article_id":{"$in":class_id}} if isinstance(class_id, list) else {"article_id":class_id}
         else :
             filter_data = {}

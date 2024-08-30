@@ -41,7 +41,7 @@ class LiveQuestionAnswer(GenericAPIView):
             return Response(data, status=400)
                 
         if ca_query:
-            class_id=int(article_id) if article_id else None
+            class_id=article_id if article_id else None
         chat_session_id = filter_serializer.validated_data.get('chat_session_id')
 
 

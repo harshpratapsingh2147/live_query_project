@@ -26,7 +26,7 @@ def get_chat_from_db(class_id, member_id, ca_query=False, chat_session_id=None):
                 class_id=chat_session_id
             else:
                 id_field ="article_id"
-            q = f"Select chat_text from ca_live_query_conversation where member_id = {member_id} and {id_field} = {class_id} ORDER BY created_time desc LIMIT 1"
+            q = f"Select chat_text from ca_live_query_conversation where member_id = {member_id} and {id_field} = '{class_id}' ORDER BY created_time desc LIMIT 1"
         curr = conn.cursor()
         curr.execute(q)
         rows = curr.fetchall()
@@ -35,7 +35,7 @@ def get_chat_from_db(class_id, member_id, ca_query=False, chat_session_id=None):
         return None
     # except psycopg2.Error as e:
     except pymysql.MySQLError as err:
-        print("Error connecting to PostgresSQL:", err)
+        print("Error connecting to DB:", err)
 
 
 def get_latest_chat_history(class_id, member_id, ca_query=False, chat_session_id=None):
@@ -172,8 +172,9 @@ def create_ca_record(query, article_id, member_id, res, chat_session_id):
         curr = conn.cursor()
         curr.execute(q, (member_id, chat, article_id, time_stamp))
         conn.commit()
+
         get_query = f"""
-        Select id from ca_live_query_conversation where member_id={member_id} and {id_field}={article_id} ORDER BY 
+        Select id from ca_live_query_conversation where member_id={member_id} and {id_field}='{article_id}' ORDER BY 
         created_time desc LIMIT 1 """
 
         curr.execute(get_query)
@@ -186,7 +187,8 @@ def create_ca_record(query, article_id, member_id, res, chat_session_id):
             return id, time_stamp
         return "", ""
     except pymysql.MySQLError as e:
-        print("Error connecting to PostgresSQL:", e)
+        print("Error connecting to DB:", e)
+        return "", ""
 
 
 def update_create_ca_chat_history(query, old_conversation, article_id, member_id, res, chat_session_id):
@@ -199,7 +201,7 @@ def update_create_ca_chat_history(query, old_conversation, article_id, member_id
         search_id = article_id if article_id else chat_session_id
         already_exist_q = f"""
                         SELECT id, chat_text FROM ca_live_query_conversation 
-                        WHERE member_id = {member_id} and {id_field} = {search_id} ORDER BY created_time desc limit 1
+                        WHERE member_id = {member_id} and {id_field} = '{search_id}' ORDER BY created_time desc limit 1
         """
 
         try:
@@ -232,7 +234,8 @@ def update_create_ca_chat_history(query, old_conversation, article_id, member_id
                 conn.close()
                 return id, time_stamp
         except pymysql.MySQLError as err:
-            print("Error connecting to PostgresSQL:", e)
+            print("Error connecting to DB:", err)
+            return "", ""
 
 
 def update_like_dislike_status(action, id, time_stamp):
