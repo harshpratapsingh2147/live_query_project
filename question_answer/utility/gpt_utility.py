@@ -49,8 +49,8 @@ def get_top_k_docs(query, class_id, section=None, ca_query=False):
     if ca_query:
         collection_name = ca_collection_name
         if class_id:
-            class_id = class_id.split(",")
-            filter_data = {"article_id":{"$in":class_id}} if isinstance(class_id, list) else {"article_id":class_id}
+            class_id = list(map(int, class_id.split(",")))
+            filter_data = {"article_id":{"$in":class_id}} if isinstance(class_id, list) else {"article_id":int(class_id)}
         else :
             filter_data = {}
     else:
@@ -139,7 +139,7 @@ def get_chat_unique_id(id, time_stamp):
 def question_answer(class_id, member_id, package_id, query, old_conversation, section=None, ca_query=False, chat_session_id=None):
     llm = ChatOpenAI(model_name="gpt-4o", temperature=0.2, openai_api_key=api_key)
 
-    qa_system_prompt = Prompt.qa_system_prompt.value
+    qa_system_prompt = Prompt.qa_system_prompt.value if not ca_query else Prompt.ca_qa_system_prompt.value
 
     qa_prompt = ChatPromptTemplate.from_messages(
         [
