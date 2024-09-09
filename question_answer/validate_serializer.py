@@ -119,8 +119,8 @@ class PredictQuestionsSerializer(serializers.Serializer):
 
     def validate_article_id(self, value):
         print("article_id:", value)
-        value = value.strip().split(",")
-        for val in value:
+        value_list = value.strip().split(",")
+        for val in value_list:
             if not valid_integer(val):
                 raise serializers.ValidationError("article_id can only be integer")
-        return list(map(int, value))
+        return  value
