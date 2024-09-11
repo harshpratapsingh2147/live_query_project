@@ -50,8 +50,10 @@ class LiveQueryValidateSerializer(serializers.Serializer):
         return value
 
     def validate_article_id(self, value):
-        if not valid_integer(value):
-            raise serializers.ValidationError("article_id can only be integer")
+        val = value.split(",")
+        for item in val:
+            if not valid_integer(item):
+                raise serializers.ValidationError("article_id can only be integer")
         return value
 
     def validate_chat_session_id(self, value):
@@ -117,8 +119,8 @@ class PredictQuestionsSerializer(serializers.Serializer):
 
     def validate_article_id(self, value):
         print("article_id:", value)
-        value = value.strip().split(",")
-        for val in value:
+        value_list = value.strip().split(",")
+        for val in value_list:
             if not valid_integer(val):
                 raise serializers.ValidationError("article_id can only be integer")
-        return list(map(int, value))
+        return  value
