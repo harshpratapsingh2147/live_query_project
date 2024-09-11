@@ -2,7 +2,7 @@ workers = 3  # Adjust based on your CPU cores
 bind = "0.0.0.0:8002"
 worker_class = 'gevent'  # Consider using 'gevent' for I/O-bound applications
 worker_connections = 1000  # Maximum number of simultaneous clients
-timeout = 60
+timeout = 1800
 
 reload = True
 accesslog = "/app/access.log"

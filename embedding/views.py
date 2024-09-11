@@ -9,6 +9,13 @@ from django.conf import settings
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
+import threading
+import sys
+import os
+
+from decouple import config
+
+# BASE_PDF_PATH = config('BASE_PDF_PATH')
 
 from exceptions.exceptions import (
     ExtendedValidationError,
@@ -18,7 +25,8 @@ from exceptions.exceptions import (
 from core.utility import CommonService
 from core.enums import ErrorMessages
 from embedding.validate_serializer import CaEmbeddingValidateSerializer
-from embedding.utility import process_embeddings
+from embedding.article_utility import process_embeddings
+from embedding.pdf_utility import process_pdf_embeddings
 
 
 logger = logging.getLogger()
@@ -60,3 +68,38 @@ class CAEmbeddingsView(GenericAPIView):
         return Response(data)
 
 
+class CAPDFEmbeddingsView(GenericAPIView):
+    """
+    It is used to list open job details.
+    """
+    
+    validate_serializer_class = CaEmbeddingValidateSerializer
+
+    
+    def post(self, request):
+        # validate input data
+        filter_serializer = self.validate_serializer_class(data=request.data)
+        if not filter_serializer.is_valid():
+            err_msg = filter_serializer.errors
+            logger.warning({"error": err_msg})
+            print(err_msg)
+            # return Response(err_msg, status=400)
+            data = CommonService.default_response(
+                {"details":err_msg}, True, "Invalid Request Params")
+            return Response(data, status=400)
+        
+        
+        data = filter_serializer.validated_data
+        _status  = process_pdf_embeddings(data)
+        
+        if not _status:
+            raise ExtendedParseError(
+                msg=ErrorMessages.EMBEDDING_PROCESS_FAILURE.value.format(reason="can't create"),
+            )
+            
+        result = CommonService.add_fields(
+                message="Embedding for the pdf is created"
+            )
+        data = CommonService.default_response(result, True, "Success")
+        return Response(data)
+        
