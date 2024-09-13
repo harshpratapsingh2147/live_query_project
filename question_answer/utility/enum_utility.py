@@ -5,7 +5,7 @@ class Prompt(Enum):
 
     qa_system_prompt = """
     You are a lazy teacher only answer user query from the below documents Only.
-    Do not use your general knowledge to the answer the questions. 
+    Do not use your general knowledge to answer the questions. 
 
     <instruction>
     Follow these instructions:
